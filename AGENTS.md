@@ -123,7 +123,7 @@ npm.cmd install        # dependencias
 npm.cmd run dev        # servidor de desarrollo
 npm.cmd run build      # producción (tsc --noEmit + vite)
 npm.cmd run preview    # previsualizar build
-npm.cmd run prueba     # TODO: lógica + solver + pantallas (todo verde antes de commit)
+npm.cmd run prueba     # lógica + solver + pantallas (todo verde antes de commit)
 npm.cmd run iconos     # regenerar iconos PNG desde SVG
 ```
 

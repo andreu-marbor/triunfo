@@ -18,7 +18,7 @@ comprobar(claves(es).length === claves(en).length, 'es y en tienen el mismo nº 
 comprobar(claves(es).join('|') === claves(ca).join('|'), 'las claves de es y ca coinciden');
 comprobar(claves(es).join('|') === claves(en).join('|'), 'las claves de es y en coinciden');
 // El mínimo crece con cada fase que añade pantallas.
-comprobar(claves(es).length >= 4, `hay un número razonable de claves (${claves(es).length})`);
+comprobar(claves(es).length >= 20, `hay un número razonable de claves (${claves(es).length})`);
 
 // --- 2. Textos y placeholders ---
 grupo('Textos y placeholders');
@@ -39,7 +39,18 @@ for (const clave of claves(es)) {
 
 // --- 3. Claves críticas ---
 grupo('Claves críticas');
-const criticas = ['app.title', 'app.subtitle', 'menu.guarantee', 'lang.label'];
+const criticas = [
+  'app.title',
+  'app.subtitle',
+  'menu.guarantee',
+  'menu.play',
+  'lang.label',
+  'game.moves',
+  'game.victory',
+  'card.name',
+  'palo.oros',
+  'rank.11',
+];
 for (const clave of criticas) {
   comprobar(clave in es, `existe «${clave}»`);
 }
@@ -55,9 +66,14 @@ comprobar(t('lang.label') === 'Idioma', 'ca: lang.label');
 setLang('en');
 comprobar(t('menu.guarantee') === 'Every deal, verified winnable', 'en: menu.guarantee');
 comprobar(t('app.title') === 'Triunfo', 'en: app.title');
+comprobar(t('game.victory') === 'You win!', 'en: game.victory');
+comprobar(t('card.name', { rango: '11', palo: 'swords' }) === '11 of swords', 'en: nombre de carta');
 comprobar(CODIGOS.ca === 'VA', 'el código visible del valenciano es VA');
 comprobar(NOMBRES.ca === 'Valencià', 'el nombre del valenciano es Valencià');
 comprobar(t('clave.inexistente') === 'clave.inexistente', 'clave inexistente devuelve la clave');
+setLang('ca');
+comprobar(t('rank.11') === 'cavaller', 'ca: rank.11 (cavaller)');
+comprobar(t('game.moves', { n: 3 }) === 'Moviments: 3', 'ca: contador de movimientos');
 setLang('es');
 
 finalizar();

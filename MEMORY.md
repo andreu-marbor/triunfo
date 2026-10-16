@@ -172,3 +172,66 @@ descubrir nada (tranvía) y fundación→columna (nunca hace falta para ganar) n
 **Pendiente inmediato (próxima sesión):** Fase 4 — `ui/mesa.ts`, `ui/carta.ts` (DOM + SVG
 inline), arrastrar y soltar con pointer events + tap-select, volteo animado, y
 `pruebas/pantallas.ts` con jsdom (partida end-to-end hasta la victoria).
+
+---
+
+## 2026-10-16 — Fase 4 (Interfaz de mesa) completada
+
+**Qué:** `npm.cmd run prueba` en verde con **234 comprobaciones** (55 i18n + 30 cartas + 72
+motor + 32 solver + 15 reparto + 30 pantallas) y build en verde. La mesa es jugable: se pinta
+el `Estado` completo y los gestos se traducen en jugadas del motor.
+
+**Hecho:**
+
+- **`src/ui/carta.ts`** — cartas 100 % vectoriales (§9.9): SVG inline paramétrico que genera las
+  40 caras de la baraja española a partir de 4 glifos de palo (`GLIFOS`), con repartos de pipas
+  por rango (`PIPAS`) y figuras (sota/caballo/rey) como glifo grande + puntos. Sin assets de
+  imagen, escalables y temables por variables CSS. `crearCarta` (cara o dorso) y `crearHueco`.
+- **`src/ui/hud.ts`** — barra superior: botón de volver, contador de movimientos y sello del
+  palo de triunfo (§9.3). Tolera que la raíz no exista previamente (la crea si falta).
+- **`src/ui/mesa.ts`** — repinta el `Estado` entero (hud, fundaciones, mazo, descarte, 7
+  columnas y capa de victoria) y traduce gestos en jugadas. **Doble entrada de interacción**
+  (PLAN §4): arrastrar y soltar con pointer events + toque-seleccionar como alternativa táctil.
+  La lógica de reglas vive en `logica/motor`; aquí **no se decide nada**.
+- **`src/styles/cartas.css`** y **`src/styles/app.css`** — estética de tapete y mesa; colores
+  siempre vía variables CSS (`--tapete`, `--oros`…).
+- **`src/ui/menu.ts`** (botón «Jugar») y **`src/main.ts`** (router menú → libre → mesa →
+  victoria). i18n ampliada a **25 claves** (`menu.play`, `game.*`, `card.name`, `rank.*`,
+  `palo.*`) en `es`/`ca`/`en`; `pruebas/i18n.ts` sube el umbral y valida las claves nuevas.
+- **`pruebas/pantallas.ts`** (30, **jsdom**): render inicial (7 columnas, 4 fundaciones, 28
+  cartas, 21 boca abajo, etiquetas accesibles), volteo del mazo, **toque-seleccionar que
+  ejecuta una jugada legal**, rechazo de jugadas ilegales y **partida COMPLETA end-to-end
+  jugada con el solver hasta la victoria** (criterio §8), más controles de la capa de victoria y
+  `destruir`.
+
+**Incidencias (aprendizaje):**
+
+- `mostrarMesa` asumía un `<div class="hud-contenedor">` previo y lo obtenía con
+  `querySelector(...)!`. En jsdom ese nodo no existe → `null` → `crearHud` reventaba al hacer
+  `.className`. Corregido: el esqueleto de la mesa **crea su propio nodo `.hud`** y `crearHud`
+  usa `classList.add('hud')` (no pisa otras clases) en lugar de asignar `className`. Lección:
+  **la UI debe crear sus nodos, no depender del contenedor previo**, y evitar
+  `querySelector(...)!` sobre nodos que no ha creado.
+- **Empaquetado de pruebas con jsdom**: al ser `"type": "module"`, esbuild emitía `require` y
+  Node fallaba con *"require is not defined in ES module scope"*. Solución: añadir
+  **`--format=esm`** al script `prueba:pantallas`. jsdom es **dependencia de desarrollo** (la
+  app sigue sin dependencias de runtime).
+
+**Decisiones:**
+
+- **Doble interacción** (arrastrar + toque): el arrastre es espinoso en móviles, así que el
+  toque-seleccionar es la alternativa robusta; ambas comparten `aplicar`/`intentar`.
+- **Cartas en DOM + SVG inline** (§9.9), no canvas: son 40 vectores paramétricos, se escalan y
+  se teman por variables CSS, y el inspector las lee.
+- Figuras (10/11/12) como **glifo grande + puntos** (1/2/3) en vez de letras: evita depender
+  del i18n para los números de figura.
+- El botón del menú hoy solo arranca **partida libre** (`repartoGanable(semillaLibre())`); el
+  **modo Día llega con la Fase 5**.
+
+**Pendiente inmediato (próxima sesión):** Fase 5 — `logica/diaria.ts` (fecha → semilla → mismo
+reparto para todos), racha y estadísticas en `localStorage` (patrón `trencadis`/`sudoku`) y menú
+con modos Día/Libre/Clásico.
+
+**Revisar en dispositivo real (no cubierto por jsdom):** drag&drop con pointer events sobre
+pantalla táctil (umbral, `setPointerCapture`, `elementFromPoint`) y layout responsivo de la
+mesa en móvil — jsdom no calcula layout ni dispara gestos reales.

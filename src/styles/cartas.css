@@ -1,0 +1,127 @@
+/* cartas.css — la carta como elemento DOM: tamaño por variables (se
+   adapta de 320 px en adelante), dorso con lattice dorada sobre tapete
+   y caras pintadas por el SVG paramétrico de ui/carta.ts (§9.9). */
+
+:root {
+  --carta-ancho: min(12vw, 74px);
+  --carta-alto: calc(var(--carta-ancho) * 1.42);
+  --carta-radio: calc(var(--carta-ancho) * 0.11);
+}
+
+.carta {
+  position: absolute;
+  width: var(--carta-ancho);
+  height: var(--carta-alto);
+  border-radius: var(--carta-radio);
+  background: var(--papel);
+  box-shadow: 0 2px 6px rgb(0 0 0 / 0.35);
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none; /* los gestos los interpreta la mesa */
+  cursor: pointer;
+}
+
+.carta-cara {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.carta-borde {
+  fill: var(--papel);
+  stroke: var(--papel-borde);
+  stroke-width: 1.5;
+}
+
+.carta-numero {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 13px;
+  font-weight: 700;
+  fill: var(--tinta);
+}
+
+/* Color cerámico por palo (variables CSS, nunca valores fijos) */
+.carta[data-palo='oros'] .carta-glifo {
+  color: var(--oros);
+}
+.carta[data-palo='copas'] .carta-glifo {
+  color: var(--copas);
+}
+.carta[data-palo='espadas'] .carta-glifo {
+  color: var(--espadas);
+}
+.carta[data-palo='bastos'] .carta-glifo {
+  color: var(--bastos);
+}
+
+/* Dorso: tapete con lattice dorada y doble filete */
+.carta-dorso {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: repeating-linear-gradient(
+    45deg,
+    var(--tapete-oscuro) 0 5px,
+    var(--tapete) 5px 10px
+  );
+  box-shadow:
+    inset 0 0 0 3px var(--papel),
+    inset 0 0 0 4.5px var(--acento);
+}
+
+/* Huecos de tapete (mazo vacío, fundación, columna vacía) */
+.hueco {
+  position: absolute;
+  inset: 0;
+  border: 2px dashed rgb(255 255 255 / 0.35);
+  border-radius: var(--carta-radio);
+  display: grid;
+  place-items: center;
+}
+
+.hueco svg {
+  width: 44%;
+  height: 44%;
+  opacity: 0.2;
+  color: var(--texto);
+}
+
+.hueco.reciclable::after {
+  content: '↻';
+  font-size: calc(var(--carta-ancho) * 0.5);
+  color: var(--texto);
+  opacity: 0.45;
+}
+
+/* Estados de interacción */
+.carta.seleccionada {
+  outline: 3px solid var(--acento);
+  outline-offset: -2px;
+  transform: translateY(-4px);
+}
+
+.columna.destino-ok .hueco,
+.fundacion.destino-ok {
+  border-color: var(--acento);
+  border-style: solid;
+  box-shadow: 0 0 0 2px rgb(230 187 92 / 0.45);
+}
+
+.carta.arrastrando {
+  opacity: 0.35;
+}
+
+/* Fantasma del arrastre (solo puntero, sigue al dedo) */
+.fantasma {
+  position: fixed;
+  z-index: 50;
+  width: var(--carta-ancho);
+  pointer-events: none;
+  transform: translate(-50%, -45%);
+  filter: drop-shadow(0 10px 14px rgb(0 0 0 / 0.45));
+}
+
+.fantasma .carta {
+  box-shadow: none;
+  cursor: grabbing;
+}

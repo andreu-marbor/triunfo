@@ -1,0 +1,187 @@
+/* app.css — layout de la mesa (hud, fila superior, columnas), capa de
+   victoria y botones genéricos. */
+
+/* --- Botones --- */
+
+.boton {
+  border: 1px solid rgb(255 255 255 / 0.35);
+  border-radius: var(--radio);
+  background: rgb(0 0 0 / 0.18);
+  color: var(--texto);
+  padding: 0.55rem 1.1rem;
+  font-weight: 600;
+  min-height: 44px; /* objetivo táctil ≥ 44px */
+}
+
+.boton:hover {
+  background: rgb(0 0 0 / 0.3);
+}
+
+.boton:focus-visible {
+  outline: 3px solid var(--acento);
+  outline-offset: 2px;
+}
+
+.boton.primario {
+  background: var(--papel);
+  color: var(--tinta);
+  border-color: var(--acento);
+}
+
+.boton.primario:hover {
+  background: #fffaf0;
+}
+
+.boton.grande {
+  font-size: 1.15rem;
+  padding: 0.7rem 1.8rem;
+}
+
+/* --- Mesa --- */
+
+.mesa {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.5rem, 1.6vw, 0.9rem);
+  padding: calc(0.5rem + env(safe-area-inset-top)) clamp(0.4rem, 2vw, 1.2rem)
+    calc(1rem + env(safe-area-inset-bottom));
+}
+
+.hud {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.hud-volver {
+  min-width: 44px;
+  padding: 0;
+  font-size: 1.3rem;
+  line-height: 1;
+}
+
+.hud-movimientos {
+  color: var(--texto-tenue);
+  font-variant-numeric: tabular-nums;
+}
+
+.hud-triunfo {
+  margin-left: auto;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  padding: 0.3rem 0.8rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.hud-triunfo[data-palo='oros'] {
+  color: var(--oros);
+}
+.hud-triunfo[data-palo='copas'] {
+  color: var(--copas);
+}
+.hud-triunfo[data-palo='espadas'] {
+  color: var(--espadas);
+}
+.hud-triunfo[data-palo='bastos'] {
+  color: var(--bastos);
+}
+
+.fila-superior {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.8rem;
+}
+
+.fundaciones,
+.pilas {
+  display: flex;
+  gap: clamp(0.25rem, 1.2vw, 0.7rem);
+}
+
+.fundaciones .fundacion,
+.zona-mazo,
+.zona-descarte {
+  position: relative;
+  width: var(--carta-ancho);
+  height: var(--carta-alto);
+}
+
+.zona-descarte .carta {
+  left: calc(var(--i, 0) * 9px);
+}
+
+.zona-mazo .carta,
+.zona-mazo .hueco {
+  cursor: pointer;
+}
+
+.columnas {
+  display: flex;
+  justify-content: space-between;
+  gap: 4px;
+  flex: 1;
+}
+
+.columna {
+  position: relative;
+  flex: 0 0 var(--carta-ancho);
+  min-height: var(--carta-alto);
+}
+
+.columna .carta {
+  left: 0;
+}
+
+/* --- Capa de victoria --- */
+
+.victoria {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: rgb(9 32 20 / 0.72);
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+}
+
+.victoria[hidden] {
+  display: none;
+}
+
+.victoria-tarjeta {
+  background: var(--papel);
+  color: var(--tinta);
+  border: 3px solid var(--acento);
+  border-radius: 16px;
+  box-shadow: var(--sombra);
+  padding: 1.6rem 2rem;
+  text-align: center;
+}
+
+.victoria-titulo {
+  margin: 0 0 0.2rem;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(1.8rem, 7vw, 2.4rem);
+}
+
+.victoria-detalle {
+  margin: 0;
+  color: #6b6152;
+}
+
+.victoria-botones {
+  display: flex;
+  gap: 0.7rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 1.2rem;
+}
+
+.victoria-botones .boton:not(.primario) {
+  color: var(--tinta);
+  border-color: var(--papel-borde);
+  background: transparent;
+}
