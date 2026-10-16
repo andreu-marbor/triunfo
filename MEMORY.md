@@ -121,3 +121,54 @@ shuffle `mulberry32` sembrado) y `logica/motor.ts` (reglas Klondike §9.2) con s
 **Pendiente inmediato (próxima sesión):** Fase 3 — `logica/solver.ts` (DFS + heurísticas +
 presupuesto de nodos, §9.4) y `logica/reparto.ts`, con test de humo de 100 semillas
 resolubles y línea base de tiempos en esta entrada.
+
+---
+
+## 2026-10-16 — Fase 3 (Solver y reparto ganable) completada
+
+**Qué:** `npm.cmd run prueba` en verde con **174 comprobaciones** (25 i18n + 30 cartas + 72
+motor + 32 solver + 15 reparto) y build en verde. El diferencial del proyecto existe: **toda
+partida del modo garantizado pasa por el solver**.
+
+**Hecho:**
+
+- **`src/logica/solver.ts`** — DFS sobre `posiblesMovimientos` con: orden heurístico
+  (0 descubre carta boca abajo · 1 columna→fundación · 2 descarte→fundación · 3
+  descarte→columna · 4 otras columnas · **5 voltear mazo siempre al final**, §9.4), conjunto
+  de estados visitados (clave: columnas con caras, mazo, descarte entero y cimas de
+  fundaciones — el mazo reciclable crea ciclos, §9.6) y presupuesto tunable de nodos.
+  **Contrato: `resuelto` ⇒ camino compuesto solo por jugadas legales de `aplicar` ⇒ cero
+  falsos positivos; `agotado` ⇒ se descarta el reparto.**
+- **`src/logica/reparto.ts`** — `repartoGanable(semilla)`: cadena **determinista**
+  semilla → semilla+1 → … verificada con el solver (base del modo diario sin servidor, §9.8),
+  `maxIntentos` 10 con fallback `verificado: false` (nunca tira la partida), `repartoClasico`
+  sin garantía (§9.5) y `semillaLibre` para el modo Libre.
+- **Pruebas** `pruebas/solver.ts` (32: camino rebobinado hasta `esVictoria`, presupuesto 0,
+  determinismo, contrato sobre 25 semillas) y `pruebas/reparto.ts` (15: **humo 100 semillas:
+  100/100 verificadas y los 100 caminos se rebobinan hasta ganar**, determinismo byte a byte,
+  modo clásico, semilla libre).
+
+**Ajuste del presupuesto (§9.4 tunable) — medición previa, 100 semillas:**
+
+| Presupuesto | Media | Peor caso | Intentos |
+|---|---|---|---|
+| 200 000 (plan original) | 1329 ms | ~13 s | 1,61 |
+| 120 000 | 880 ms | ~8,6 s | 1,64 |
+| 80 000 | 614 ms | ~5,6 s | 1,65 |
+| **50 000 (elegido)** | **409 ms** | ~3,5 s | 1,66 |
+| 30 000 | 278 ms | ~2,3 s | 1,74 |
+
+El presupuesto alto no aumentaba la tasa de acierto (los repartos imposibles lo quemaban
+entero): con **50 000** se cumple el objetivo de servicio (< 500 ms de media, PLAN §4 Fase 3)
+con el 100 % de repartos verificados.
+
+**Línea base Fase 3 (criterio §8):** media **410,3 ms/reparto** · 1,66 intentos · 3838
+nodos/verificación · ~58–60 % de semillas probadas en un solo intento (la cadena completa el
+resto). Entorno: Node v22.23.2 en Windows (esta máquina).
+
+**Pruning consciente (falsos negativos aceptables, §9.4):** mover un rey a columna vacía sin
+descubrir nada (tranvía) y fundación→columna (nunca hace falta para ganar) no se exploran.
+
+**Pendiente inmediato (próxima sesión):** Fase 4 — `ui/mesa.ts`, `ui/carta.ts` (DOM + SVG
+inline), arrastrar y soltar con pointer events + tap-select, volteo animado, y
+`pruebas/pantallas.ts` con jsdom (partida end-to-end hasta la victoria).
