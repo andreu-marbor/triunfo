@@ -143,3 +143,14 @@ function arrancar(estado: Estado, modo: ModoJuego): void {
 }
 
 irAMenu();
+
+// --- PWA (Fase 6): registrar el service worker solo en producción ---
+// Estrategia cache-first con offline total (public/sw.js); en dev se omite
+// para no interferir con el HMR.
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch((error) => {
+      console.warn('Service worker no registrado:', error);
+    });
+  });
+}

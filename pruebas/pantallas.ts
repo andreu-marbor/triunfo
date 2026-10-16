@@ -38,6 +38,7 @@ import { mostrarMesa } from '../src/ui/mesa';
 import { mostrarMenu } from '../src/ui/menu';
 import { mostrarEstadisticas } from '../src/ui/estadisticas';
 import { estadisticasVacias } from '../src/logica/estadisticas';
+import { sonidoActivado } from '../src/efectos';
 import { comprobar, finalizar, grupo } from './ayudante';
 
 aplicarIdiomaInicial();
@@ -254,5 +255,45 @@ comprobar(
 clic(raiz.querySelector('[data-volver]'));
 comprobar(estados[estados.length - 1] === 'volver', 'el botón de volver regresa al menú');
 stats();
+
+// --- 8. Fase 6: botón de sonido en menú y HUD ---
+grupo('Botón de sonido (menú y HUD)');
+const menuSonido = mostrarMenu(raiz, {
+  estadisticas: estadisticasVacias(),
+  diarioHecho: false,
+  onJugar: () => {},
+  onEstadisticas: () => {},
+});
+const botonSonido = raiz.querySelector<HTMLButtonElement>('.fila-ajustes .boton-sonido');
+comprobar(botonSonido !== null, 'el menú incluye el botón de sonido');
+comprobar(
+  (botonSonido?.getAttribute('aria-label') ?? '').length > 0,
+  'el botón de sonido tiene etiqueta accesible',
+);
+const antesDeConmutar = sonidoActivado();
+const glifoAntes = botonSonido?.textContent ?? '';
+clic(botonSonido);
+comprobar(
+  sonidoActivado() !== antesDeConmutar,
+  'el botón conmuta el ajuste de sonido (persistido)',
+);
+comprobar(
+  (botonSonido?.textContent ?? '') !== glifoAntes,
+  'el glifo 🔊/🔇 refleja el nuevo estado',
+);
+clic(botonSonido); // volver al estado original
+comprobar(sonidoActivado() === antesDeConmutar, 'vuelve al estado de sonido original');
+menuSonido();
+
+// La mesa también lleva el botón de sonido en su HUD.
+const mesaSonido = mostrarMesa(raiz, repartoGanable(20261016).estado, {
+  irAMenu: () => {},
+  onOtraPartida: () => {},
+});
+comprobar(
+  raiz.querySelector('.hud .boton-sonido') !== null,
+  'el HUD de la mesa incluye el botón de sonido',
+);
+mesaSonido.destruir();
 
 finalizar();

@@ -41,7 +41,7 @@ comprobar(claves(es).length === claves(en).length, 'es y en tienen el mismo nº 
 comprobar(claves(es).join('|') === claves(ca).join('|'), 'las claves de es y ca coinciden');
 comprobar(claves(es).join('|') === claves(en).join('|'), 'las claves de es y en coinciden');
 // El mínimo crece con cada fase que añade pantallas.
-comprobar(claves(es).length >= 40, `hay un número razonable de claves (${claves(es).length})`);
+comprobar(claves(es).length >= 45, `hay un número razonable de claves (${claves(es).length})`);
 
 // --- 2. Textos y placeholders ---
 grupo('Textos y placeholders');
@@ -75,6 +75,7 @@ const criticas = [
   'rank.11',
   'menu.daily',
   'menu.stats',
+  'sound.label',
   'stats.streak',
   'stats.streakDays',
   'stats.title',

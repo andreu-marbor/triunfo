@@ -3,6 +3,7 @@
 
 import type { Palo } from '../logica/cartas';
 import { t } from '../i18n';
+import { crearBotonSonido } from '../efectos';
 
 export interface OpcionesHud {
   movimientos: number;
@@ -21,4 +22,7 @@ export function crearHud(raiz: HTMLElement, opciones: OpcionesHud): void {
     </span>
   `;
   raiz.querySelector<HTMLButtonElement>('.hud-volver')!.addEventListener('click', opciones.onMenu);
+  // Botón de sonido 🔊/🔇 (Fase 6); el HUD se repinta en cada jugada, así
+  // que se recrea aquí con su estado actual.
+  raiz.appendChild(crearBotonSonido());
 }

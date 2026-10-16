@@ -79,7 +79,8 @@ triunfo/
 ├── src/
 │   ├── main.ts              # arranque + router de pantallas
 │   ├── persistencia.ts · efectos.ts (WebAudio)
-│   ├── logica/              # cartas · motor (reglas Klondike) · solver · reparto · diaria
+│   ├── logica/              # cartas · motor (reglas Klondike) · solver · reparto · diaria · estadisticas
+│   ├── almacenamiento/      # estadisticas.ts (localStorage con saneado defensivo)
 │   ├── i18n/                # index.ts + es.json · ca.json · en.json
 │   ├── ui/                  # menu · mesa · carta · hud · resultado · lang · estadisticas
 │   └── styles/              # base.css (variables, tapete) · cartas.css · app.css

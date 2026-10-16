@@ -283,3 +283,35 @@ mesa en móvil — jsdom no calcula layout ni dispara gestos reales.
 - **`--format=esm` necesario en `prueba:i18n`**: al importar `node:fs` en la prueba de i18n, esbuild (con `--platform=node`) volvía a emitir `require` y Node reventaba con *"require is not defined in ES module scope"* (mismo síntoma que ya tuvo `prueba:pantallas` en la Fase 4). Añadido `--format=esm` al script en `package.json`.
 
 **Pendiente (revisar/actuar):** el repo **aún no está desplegado en GitHub Pages** porque el flujo de despliegue (`despliegue.yml`, Fase 7) no existe todavía — solo hay `ci.yml` (pruebas + build). Además, conviene comprobar en GitHub → Settings → Pages que la fuente esté puesta en **GitHub Actions** para que, cuando se añada el workflow de despliegue, no falle por falta de permisos.
+
+---
+
+## 2026-10-16 — Fase 6 (PWA) completada
+
+**Qué:** `npm.cmd run prueba` en verde con **351 comprobaciones** (87 i18n + 30 cartas + 72 motor + 32 solver + 15 reparto + 28 diaria + 40 estadísticas + 47 pantallas) y `npm.cmd run build` en verde. Triunfo es ahora instalable y funciona **offline tras la primera visita** (criterio §8: Lighthouse PWA y modo avión se revisan en la Fase 7).
+
+**Hecho:**
+
+- **`public/manifest.json`** — nombre/short_name, `start_url` y `scope` = `"./"` (patrón de los hermanos, imprescindible con `base: './'`), `display: standalone`, `theme_color`/`background_color` = `#14683c` (el tapete verde), `categories` e iconos 192/512 (`any`) + maskable 192/512 + SVG.
+- **`public/sw.js`** — service worker **cache-first con actualización en segundo plano** (stale-while-revalidate): respuesta inmediata desde caché y refresco en paralelo para la próxima visita; **offline total tras la primera visita** (precache de la carcasa en `install`: `./`, `index.html`, `manifest.json`, `favicon.svg`). Caché versionada `triunfo-v1`: `activate` borra las demás y hace `clients.claim()`; `skipWaiting()` en install. Solo GET y solo mismo origen (respuestas `ok`).
+- **Registro del SW** en `src/main.ts`: `if (import.meta.env.PROD && 'serviceWorker' in navigator)` dentro de `load` → `register('./sw.js')` (en dev se omite para no estorbar al HMR).
+- **Iconos** — `scripts/generar-iconos.mjs` (nuevo, con **`sharp`** como dependencia de desarrollo) genera `icono-192/512.png`, `apple-touch-icon.png` (180) y `maskable-192/512.png` desde dos SVG paramétricos propios (`public/icons/icono.svg` y `icono-maskable.svg`: carta con la T del triunfo sobre tapete; el maskable respeta la zona segura del 80 %). npm script `iconos`.
+- **`index.html`** — añadidos `<link rel="manifest">`, `<link rel="apple-touch-icon">` (los metas Apple y el `theme-color` ya estaban).
+- **`src/efectos.ts`** (nuevo) — sonido y háptica **WebAudio puro, cero assets** (osciladores + envolvente, patrón de `sudoku`/`tres-en-raya`): efectos `carta` (rondeo al voltear), `mover` (golpe al soltar), `ui`, `triunfo` (dos notas ascendentes, sabor de brisca) y `victoria` (fanfarria Do–Mi–Sol–Do). `vibrar()` háptico, `prefiereMovimientoReducido()` y botón 🔊/🔇 persistente (`crearBotonSonido`) con la clave `triunfo:sonido` en `persistencia.ts`.
+- **Integración** — la mesa reproduce `carta`/`mover` en `aplicar` y `victoria` + vibración al ganar; el botón de sonido vive en el **HUD de la mesa** y en la **fila de ajustes del menú** (junto al selector de idioma). Clave i18n `sound.label` en `es`/`ca`/`en` (umbral de paridad subido a ≥45).
+- **Pruebas** — `pruebas/pantallas.ts` ampliada a 47: el menú incluye el botón de sonido con etiqueta accesible, **conmuta el ajuste persistido** y refleja el estado en el glifo; el HUD de la mesa también lo lleva.
+
+**Incidencias (aprendizaje):**
+
+- **El script de iconos pisó `favicon.svg`**: cloné el de los hermanos, que sobrescribían el favicon con una copia del icono, pero aquí el favicon es un **SVG propio con fondo transparente** (carta suelta), no una copia del icono con esquinas verdes. Restaurado el original y quitada esa copia del script. Lección: al clonar un script de otro repo, revisar qué asume sobre los ficheros existentes.
+- Se me coló **texto en otro idioma dentro de un comentario** de `efectos.ts` (carácter chino); cazado al releer el fichero. Lección: releer lo escrito, no solo lo que se creía haber escrito.
+
+**Decisiones:**
+
+- **Cache-first (no network-first como los hermanos)**: el PLAN exige "offline total tras la primera visita"; el network-first de `sudoku`/`tres-en-raya` deja la primera visita sin red sin carcasa. Se combina con actualización en segundo plano para no servir assets obsoletos (los hashes del build cambian en cada deploy).
+- **Sonido por defecto ACTIVADO** (la clave solo se escribe al silenciar), igual que en los hermanos; el efecto `triunfo` queda reservado para el momento estrella de la Fase 9.
+- La **generación de PNG queda como script manual** (`npm.cmd run iconos`) y los PNG se commitean (patrón de los hermanos): así Pages sirve los iconos sin necesidad de `sharp` en la CI.
+
+**Pendiente inmediato (próxima sesión):** Fase 7 — `despliegue.yml` (prueba → build → Pages), comprobar que la fuente de Pages está en "GitHub Actions", medir Lighthouse PWA ≥ 90 y verificar el modo avión.
+
+**Revisar en dispositivo real:** instalabilidad en Android/iOS (A2HS), comportamiento del SW al hacer deploy de una versión nueva (debe actualizar en la segunda visita) y los efectos de sonido con audio real (jsdom no tiene `AudioContext`).

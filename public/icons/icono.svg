@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Icono del PWA: carta con la T del triunfo (SVG paramétrico, sin assets).
+       Misma identidad que el favicon, a mayor tamaño. -->
+  <rect width="512" height="512" rx="96" fill="#14683c" />
+  <rect x="146" y="96" width="220" height="320" rx="26" fill="#f7f2e4" stroke="#c8912f" stroke-width="14" />
+  <rect x="200" y="150" width="112" height="28" rx="8" fill="#c8912f" />
+  <rect x="238" y="150" width="36" height="150" rx="8" fill="#c8912f" />
+</svg>

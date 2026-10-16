@@ -286,3 +286,37 @@
   outline: 2px solid var(--acento);
   outline-offset: 2px;
 }
+
+/* --- Botón de sonido 🔊/🔇 (Fase 6) --- */
+
+.boton-icono {
+  min-width: 44px; /* objetivo táctil ≥ 44px */
+  min-height: 44px;
+  padding: 0;
+  border: 1px solid rgb(255 255 255 / 0.35);
+  border-radius: var(--radio);
+  background: rgb(0 0 0 / 0.18);
+  color: var(--texto);
+  font-size: 1.15rem;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.boton-icono:hover {
+  background: rgb(0 0 0 / 0.3);
+}
+
+.boton-icono:focus-visible {
+  outline: 3px solid var(--acento);
+  outline-offset: 2px;
+}
+
+/* Fila de ajustes del menú: idioma + sonido, centrados */
+.fila-ajustes {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7rem;
+}

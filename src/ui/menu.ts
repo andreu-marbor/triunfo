@@ -4,6 +4,7 @@
 
 import { onCambioIdioma, t } from '../i18n';
 import { crearSelectorIdioma } from './lang';
+import { crearBotonSonido } from '../efectos';
 import type { Estadisticas } from '../logica/estadisticas';
 
 export type ModoJuego = 'dia' | 'libre';
@@ -55,7 +56,9 @@ export function mostrarMenu(raiz: HTMLElement, opciones: OpcionesMenu): () => vo
           </button>
         </div>
 
-        <div class="fila-idioma"></div>
+        <div class="fila-ajustes">
+          <div class="fila-idioma"></div>
+        </div>
       </main>
     `;
 
@@ -68,5 +71,6 @@ export function mostrarMenu(raiz: HTMLElement, opciones: OpcionesMenu): () => vo
       .querySelector<HTMLButtonElement>('[data-estadisticas]')!
       .addEventListener('click', opciones.onEstadisticas);
     crearSelectorIdioma(raiz.querySelector<HTMLElement>('.fila-idioma')!);
+    raiz.querySelector<HTMLElement>('.fila-ajustes')!.appendChild(crearBotonSonido());
   }
 }

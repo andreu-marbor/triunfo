@@ -14,6 +14,7 @@ import {
   type Origen,
 } from '../logica/motor';
 import { t } from '../i18n';
+import { reproducir, vibrar } from '../efectos';
 import { crearCarta, crearHueco } from './carta';
 import { crearHud } from './hud';
 
@@ -241,7 +242,14 @@ export function mostrarMesa(
     actual = siguiente;
     seleccion = null;
     pintar();
-    if (ganabaAhora) acciones.onVictoria?.(actual);
+    if (ganabaAhora) {
+      reproducir('victoria');
+      vibrar([40, 60, 40]);
+      acciones.onVictoria?.(actual);
+    } else {
+      // Rondéo al descubrir/voltear carta; golpe limpio al mover.
+      reproducir(mov.tipo === 'voltear' ? 'carta' : 'mover');
+    }
     return true;
   }
 

@@ -12,6 +12,7 @@ export interface Almacen {
 
 const CLAVE_ESTADISTICAS = 'triunfo:estadisticas:v1';
 const CLAVE_IDIOMA = 'triunfo:idioma';
+const CLAVE_SONIDO = 'triunfo:sonido';
 
 /** Almacén real si el navegador lo permite (modo privado, cuota…), o `null`. */
 export function almacenPorDefecto(): Almacen | null {
@@ -91,4 +92,4 @@ export function borrar(clave: string, al: Almacen | null = almacenPorDefecto()):
   }
 }
 
-export { CLAVE_ESTADISTICAS, CLAVE_IDIOMA };
+export { CLAVE_ESTADISTICAS, CLAVE_IDIOMA, CLAVE_SONIDO };

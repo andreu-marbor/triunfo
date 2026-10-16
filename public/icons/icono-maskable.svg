@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Icono MASKABLE: tapete a sangre y la carta dentro de la zona segura
+       (círculo del 80 % centrado); los recortes redondos del sistema no
+       se comen la carta. -->
+  <rect width="512" height="512" fill="#14683c" />
+  <rect x="181" y="136" width="150" height="240" rx="18" fill="#f7f2e4" stroke="#c8912f" stroke-width="10" />
+  <rect x="216" y="172" width="80" height="20" rx="6" fill="#c8912f" />
+  <rect x="242" y="172" width="28" height="106" rx="6" fill="#c8912f" />
+</svg>
