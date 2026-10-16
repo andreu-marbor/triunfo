@@ -1,0 +1,32 @@
+# CI — pruebas + build. Se ejecuta en pushes a `main` y en pull requests.
+# (Cuando llegue la Fase 7, despliegue.yml tomará el despliegue en Pages;
+# ajustar entonces los triggers para no duplicar trabajo.)
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Configurar Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Pruebas (i18n)
+        run: npm run prueba
+
+      - name: Build de producción
+        run: npm run build

@@ -68,13 +68,13 @@ Mediterráneo — y con dos valores diferenciales que ningún clon tiene: **toda
 ```
 triunfo/
 ├── PLAN.md · MEMORY.md · AGENTS.md · README.md · LICENSE
-├── index.html · package.json · tsconfig.json · vite.config.ts   # base: '/triunfo/'
-├── .github/workflows/       # ci.yml (build+pruebas) · despliegue.yml (Pages, Fase 6)
+├── index.html · package.json · tsconfig.json · vite.config.ts   # base: './'
+├── .github/workflows/       # ci.yml (pruebas+build) · despliegue.yml (Pages, Fase 7)
 ├── scripts/
 │   └── generar-iconos.mjs   # iconos PWA con sharp
 ├── pruebas/                 # esbuild + Node (ayudante propio, sin frameworks)
 │   ├── ayudante.ts          # mini-ayudante de aserciones
-│   ├── cartas.ts · motor.ts · solver.ts · reparto.ts · diaria.ts
+│   ├── i18n.ts · cartas.ts · motor.ts · solver.ts · reparto.ts · diaria.ts
 │   └── pantallas.ts         # jsdom solo aquí
 ├── src/
 │   ├── main.ts              # arranque + router de pantallas

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Favicon: carta con la T del triunfo (SVG paramétrico, sin assets) -->
+  <rect x="8" y="4" width="48" height="56" rx="8" fill="#f7f2e4" stroke="#c8912f" stroke-width="4" />
+  <text x="32" y="45" font-family="Georgia, 'Times New Roman', serif" font-size="38"
+        font-weight="bold" text-anchor="middle" fill="#c8912f">T</text>
+</svg>

@@ -1,0 +1,15 @@
+# Dependencias y build
+node_modules/
+dist/
+*.log
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Seguridad — NUNCA al repo (ver AGENTS.md)
+*.keystore
+*.jks
+*.p12
+.env
+local.properties
