@@ -9,7 +9,7 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "prueba": "npm run prueba:i18n && npm run prueba:cartas && npm run prueba:motor && npm run prueba:solver && npm run prueba:reparto && npm run prueba:diaria && npm run prueba:estadisticas && npm run prueba:pantallas",
-    "prueba:i18n": "esbuild pruebas/i18n.ts --bundle --platform=node --outfile=node_modules/.tmp/i18n.mjs --log-level=warning && node node_modules/.tmp/i18n.mjs",
+    "prueba:i18n": "esbuild pruebas/i18n.ts --bundle --platform=node --format=esm --outfile=node_modules/.tmp/i18n.mjs --log-level=warning && node node_modules/.tmp/i18n.mjs",
     "prueba:cartas": "esbuild pruebas/cartas.ts --bundle --platform=node --outfile=node_modules/.tmp/cartas.mjs --log-level=warning && node node_modules/.tmp/cartas.mjs",
     "prueba:motor": "esbuild pruebas/motor.ts --bundle --platform=node --outfile=node_modules/.tmp/motor.mjs --log-level=warning && node node_modules/.tmp/motor.mjs",
     "prueba:solver": "esbuild pruebas/solver.ts --bundle --platform=node --outfile=node_modules/.tmp/solver.mjs --log-level=warning && node node_modules/.tmp/solver.mjs",

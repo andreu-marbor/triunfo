@@ -6,10 +6,33 @@ import es from '../src/i18n/es.json';
 import ca from '../src/i18n/ca.json';
 import en from '../src/i18n/en.json';
 import { CODIGOS, NOMBRES, setLang, t, type Idioma } from '../src/i18n/index';
+import { readFileSync } from 'node:fs';
 import { comprobar, finalizar, grupo } from './ayudante';
 
 const RECURSOS: Record<Idioma, Record<string, string>> = { es, ca, en };
 const claves = (r: Record<string, string>): string[] => Object.keys(r).sort();
+
+// --- 0. Sin claves duplicadas en el JSON crudo ---
+// `JSON.parse` (y el import de esbuild) se quedan con la ÚLTIMA de dos
+// claves repetidas, y `Object.keys` no las duplica: en local pasaría en
+// silencio, pero el build de producción (Vite/esbuild) sí rechaza el
+// fichero y el CI falla. Por eso se lee el texto crudo y se cuentan.
+grupo('Sin claves duplicadas (JSON crudo)');
+const RUTAS: Record<Idioma, string> = {
+  es: 'src/i18n/es.json',
+  ca: 'src/i18n/ca.json',
+  en: 'src/i18n/en.json',
+};
+for (const [id, ruta] of Object.entries(RUTAS)) {
+  const crudo = readFileSync(ruta, 'utf8');
+  const encontradas = [...crudo.matchAll(/^\s*"([^"]+)"\s*:/gm)].map((m) => m[1]);
+  const unicas = new Set(encontradas);
+  const repetidas = encontradas.filter((k, i) => encontradas.indexOf(k) !== i);
+  comprobar(
+    repetidas.length === 0,
+    `${id}: sin claves duplicadas (${encontradas.length} entradas, ${unicas.size} únicas)`,
+  );
+}
 
 // --- 1. Paridad de claves ---
 grupo('Paridad de claves');

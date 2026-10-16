@@ -33,7 +33,7 @@ import { PALOS } from '../src/logica/cartas';
 import { esVictoria, posiblesMovimientos, type Movimiento } from '../src/logica/motor';
 import { repartoGanable } from '../src/logica/reparto';
 import { resolver } from '../src/logica/solver';
-import { aplicarIdiomaInicial } from '../src/i18n';
+import { aplicarIdiomaInicial, setLang } from '../src/i18n';
 import { mostrarMesa } from '../src/ui/mesa';
 import { mostrarMenu } from '../src/ui/menu';
 import { mostrarEstadisticas } from '../src/ui/estadisticas';
@@ -41,6 +41,10 @@ import { estadisticasVacias } from '../src/logica/estadisticas';
 import { comprobar, finalizar, grupo } from './ayudante';
 
 aplicarIdiomaInicial();
+// El texto de estas pruebas debe ser determinista: en el runner de CI
+// (Linux) `navigator.language` resuelve a inglés y rompería las
+// aserciones en español. Fijamos el idioma explícitamente.
+setLang('es');
 
 const raiz = document.getElementById('app')!;
 

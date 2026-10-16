@@ -238,38 +238,48 @@ mesa en móvil — jsdom no calcula layout ni dispara gestos reales.
 
 ---
 
----
-
 ## 2026-10-16 — Fase 5 (Modo diario y estadísticas) completada
 
-**Qué:** 
-pm.cmd run prueba en verde con **340 comprobaciones** (82 i18n + 30 cartas + 72 motor + 32 solver + 15 reparto + 28 diaria + 40 estadísticas + 41 pantallas) y 
-pm.cmd run build (tsc --noEmit + vite) en verde.
+**Qué:** `npm.cmd run prueba` en verde con **340 comprobaciones** (82 i18n + 30 cartas + 72 motor + 32 solver + 15 reparto + 28 diaria + 40 estadísticas + 41 pantallas) y `npm.cmd run build` (tsc --noEmit + vite) en verde.
 
 **Hecho:**
 
-- **src/logica/diaria.ts** — fecha local (AAAA-MM-DD) → semillaDelDia (hash FNV-1a de 32 bits de la cadena del día): mismo día → misma semilla → epartoGanable regenera **exactamente el mismo reparto para todo el mundo sin servidor** (§9.8). Puras echaLocal, esFechaValida, diasEntre y diaSiguiente (cruza mes/año/bisiesto contando en milisegundos UTC, no con setDate).
-- **src/logica/estadisticas.ts** — modelo Estadisticas (racha, mejor racha, último día ganado, días jugados, victorias diario/libre, derrotas, movimientos y tiempos). Racha **tipo Wordle: un intento por día** — vanzarRacha sube al día siguiente, reinicia tras un hueco, no infla al repetir el mismo día y no castiga con el reloj atrasado. Registro puro e inmutable de victoria/derrota (diario y libre) + 	iempoMedioLibreMs y movimientosMediosLibre.
-- **src/almacenamiento/estadisticas.ts** — guarda/recupera en localStorage con **lectura defensiva**: cualquier campo corrupto o fuera de rango cae a su valor por defecto (racha negativa → 0, fecha ilegible → null, tiempos no numéricos se descartan).
-- **src/persistencia.ts** — refactor a patrón **Almacen inyectable** (interfaz getItem/setItem/removeItem, lmacenPorDefecto()): la lógica se testea en Node con un almacén falso, sin navegador.
-- **UI** — src/ui/menu.ts con modos **Día** y **Libre** + acceso a estadísticas, sello «hecho» cuando el diario de hoy está jugado y fila de racha. src/ui/estadisticas.ts (nueva): rejilla de tarjetas (racha, mejor racha, victorias, derrotas, medias y mejores tiempos/movimientos) y barra de los últimos 7 días. src/main.ts: router con los dos modos, cronómetro por partida, y guardado de resultado al ganar o al salir.
-- **i18n** — claves nuevas menu.daily, menu.free, menu.stats, stats.* en es/ca/en; pruebas/i18n.ts sube el umbral a ≥40 y valida las claves nuevas.
-- **Pruebas** — pruebas/diaria.ts (28: determinismo de la semilla, estabilidad, dispersión en 30 días, cruces de mes/año/bisiesto) y pruebas/estadisticas.ts (40: racha Wordle, medias, saneado defensivo, borrar/guardar sin almacén). pruebas/pantallas.ts ampliada a 41: menú con dos modos, sello del día, dispatch de Día/Libre y rejilla de estadísticas.
+- **`src/logica/diaria.ts`** — fecha local (`AAAA-MM-DD`) → `semillaDelDia` (hash FNV-1a de 32 bits de la cadena del día): mismo día → misma semilla → `repartoGanable` regenera **exactamente el mismo reparto para todo el mundo sin servidor** (§9.8). Puras `fechaLocal`, `esFechaValida`, `diasEntre` y `diaSiguiente` (cruza mes/año/bisiesto contando en milisegundos UTC, no con `setDate`).
+- **`src/logica/estadisticas.ts`** — modelo `Estadisticas` (racha, mejor racha, último día ganado, días jugados, victorias diario/libre, derrotas, movimientos y tiempos). Racha **tipo Wordle: un intento por día** — `avanzarRacha` sube al día siguiente, reinicia tras un hueco, no infla al repetir el mismo día y no castiga con el reloj atrasado. Registro puro e inmutable de victoria/derrota (diario y libre) + `tiempoMedioLibreMs` y `movimientosMediosLibre`.
+- **`src/almacenamiento/estadisticas.ts`** — guarda/recupera en `localStorage` con **lectura defensiva**: cualquier campo corrupto o fuera de rango cae a su valor por defecto (racha negativa → 0, fecha ilegible → null, tiempos no numéricos se descartan).
+- **`src/persistencia.ts`** — refactor a patrón **`Almacen` inyectable** (interfaz getItem/setItem/removeItem, `almacenPorDefecto()`): la lógica se testea en Node con un almacén falso, sin navegador.
+- **UI** — `src/ui/menu.ts` con modos **Día** y **Libre** + acceso a estadísticas, sello «hecho» cuando el diario de hoy está jugado y fila de racha. `src/ui/estadisticas.ts` (nueva): rejilla de tarjetas (racha, mejor racha, victorias, derrotas, medias y mejores tiempos/movimientos) y barra de los últimos 7 días. `src/main.ts`: router con los dos modos, cronómetro por partida, y guardado de resultado al ganar o al salir.
+- **i18n** — claves nuevas `menu.daily`, `menu.free`, `menu.stats`, `stats.*` en `es`/`ca`/`en`; `pruebas/i18n.ts` sube el umbral a ≥40 y valida las claves nuevas.
+- **Pruebas** — `pruebas/diaria.ts` (28: determinismo de la semilla, estabilidad, dispersión en 30 días, cruces de mes/año/bisiesto) y `pruebas/estadisticas.ts` (40: racha Wordle, medias, saneado defensivo, borrar/guardar sin almacén). `pruebas/pantallas.ts` ampliada a 41: menú con dos modos, sello del día, dispatch de Día/Libre y rejilla de estadísticas.
 
 **Incidencias (aprendizaje):**
 
-- **Expectativa errónea en diasEntre**: la prueba esperaba 2 días del 28 de febrero al 1 de marzo de 2026; en realidad son **1** (la función era correcta, el supuesto mío no). Lección: en cálculo de fechas, verificar con un Date real antes de congelar una expectativa.
-- **Import mal ubicado**: lmacenamiento/estadisticas.ts importaba ./persistencia en vez de ../persistencia (el fichero está en src/). Esbuild lo cazó al empaquetar la prueba.
-- **exit code 1 falso en PowerShell**: 
-pm.cmd run prueba 2>&1 | Select-String devuelve 1 por el pipeado aunque todas las suites pasen. Para capturar el código real: redirigir a fichero (*>) o usar $LASTEXITCODE sin pipe.
+- **Expectativa errónea en `diasEntre`**: la prueba esperaba 2 días del 28 de febrero al 1 de marzo de 2026; en realidad son **1** (la función era correcta, el supuesto mío no). Lección: en cálculo de fechas, verificar con un `Date` real antes de congelar una expectativa.
+- **Import mal ubicado**: `almacenamiento/estadisticas.ts` importaba `./persistencia` en vez de `../persistencia` (el fichero está en `src/`). Esbuild lo cazó al empaquetar la prueba.
+- **`exit code 1` falso en PowerShell**: `npm.cmd run prueba 2>&1 | Select-String` devuelve 1 por el pipeado aunque todas las suites pasen. Para capturar el código real: redirigir a fichero (`*>`) o usar `$LASTEXITCODE` sin pipe.
 
 **Decisiones:**
 
 - **Un intento por día** en el diario (patrón Wordle): ganar dos veces el mismo día suma victorias pero no infla la racha; una derrota del día no la rompe, se rompe al llegar a un día sin haber ganado el anterior.
-- **Día y Libre** son los dos modos expuestos; el **Clásico sin garantía (§9.5)** queda para una pantalla posterior (no se pierde: epartoClasico ya existe).
-- La **derrota/abandono se registra al salir** desde la mesa (cerrarPartida), no dentro de ui/mesa.ts: la UI de la mesa no decide reglas de negocio, solo emite eventos.
-- El **diario usa epartoGanable** igual que el libre: la garantía de victoria también aplica al modo diario (§23 del PLAN).
+- **Día y Libre** son los dos modos expuestos; el **Clásico sin garantía (§9.5)** queda para una pantalla posterior (no se pierde: `repartoClasico` ya existe).
+- La **derrota/abandono se registra al salir** desde la mesa (`cerrarPartida`), no dentro de `ui/mesa.ts`: la UI de la mesa no decide reglas de negocio, solo emite eventos.
+- El **diario usa `repartoGanable`** igual que el libre: la garantía de victoria también aplica al modo diario (§23 del PLAN).
 
 **Pendiente inmediato (próxima sesión):** Fase 6 — PWA: manifest, service worker cache-first (offline total tras la primera visita), iconos con sharp y efectos WebAudio (rondeos, victoria, triunfo).
 
 **Revisar en dispositivo real (no cubierto por jsdom):** persistencia real de localStorage en móvil y el modo Día al cruzar la medianoche con la app abierta (jsdom no avanza el reloj).
+
+---
+
+## 2026-10-16 — Arreglo del CI y corrección de i18n (Fases 4 y 5)
+
+**Qué:** el CI de GitHub (`ci.yml`) venía fallando desde la Fase 4 (fallos en los runs `38915056965` y `38930154674`), lo que impedía validar el proyecto en verde. Causas reales encontradas y corregidas; la suite local se mantiene en verde (**343 comprobaciones**: 85 i18n + 30 cartas + 72 motor + 32 solver + 15 reparto + 28 diaria + 40 estadísticas + 41 pantallas) y `npm.cmd run build` en verde.
+
+**Incidencias (aprendizaje):**
+
+- **Claves duplicadas en los JSON de i18n**: `menu.daily` y `menu.stats` estaban definidas dos veces en `es.json`, `ca.json` y `en.json` (añadidas al principio y repetidas al final al ampliar la Fase 5). En local pasaba inadvertido porque **`JSON.parse` acepta claves duplicadas** (se queda con la última) y la prueba de paridad comparaba `Object.keys`, que no las duplica; el **build de producción (Vite) sí las rechaza** y el CI fallaba en el paso de build. Corregido quitando los duplicados de los tres JSON. Lección: **una prueba de paridad por `Object.keys` no detecta duplicados en el JSON crudo**.
+- **Pruebas de pantallas dependientes del idioma local**: `pruebas/pantallas.ts` usaba `aplicarIdiomaInicial()`, que en el runner de CI (Linux) resolvía `navigator.language` a inglés → las aserciones de texto en español (`«7 de oros»`, `¡Has ganado!`) fallaban en CI y pasaban en local (máquina en español). Corregido con **`setLang('es')` explícito** tras el arranque: el texto de las pruebas debe ser determinista, no depender del navegador del runner.
+- **Detección de duplicados añadida a `pruebas/i18n.ts`**: nuevo grupo al principio que **lee el JSON crudo** (`readFileSync`) y cuenta las claves con una expresión regular, fallando si alguna se repite. Así esta clase de bug se caza en local, no solo en CI.
+- **`--format=esm` necesario en `prueba:i18n`**: al importar `node:fs` en la prueba de i18n, esbuild (con `--platform=node`) volvía a emitir `require` y Node reventaba con *"require is not defined in ES module scope"* (mismo síntoma que ya tuvo `prueba:pantallas` en la Fase 4). Añadido `--format=esm` al script en `package.json`.
+
+**Pendiente (revisar/actuar):** el repo **aún no está desplegado en GitHub Pages** porque el flujo de despliegue (`despliegue.yml`, Fase 7) no existe todavía — solo hay `ci.yml` (pruebas + build). Además, conviene comprobar en GitHub → Settings → Pages que la fuente esté puesta en **GitHub Actions** para que, cuando se añada el workflow de despliegue, no falle por falta de permisos.
