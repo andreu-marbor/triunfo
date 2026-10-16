@@ -57,7 +57,7 @@ Mediterráneo — y con dos valores diferenciales que ningún clon tiene: **toda
 | Tests | esbuild + Node (`npm.cmd run prueba`) — sin frameworks |
 | PWA | manifest + service worker cache-first |
 | Android | PWA + Bubblewrap (sin Android Studio) |
-| CI/CD | GitHub Actions → GitHub Pages (`prueba` → `build` → deploy) |
+| CI/CD | GitHub Actions: `ci.yml` (PRs) · `despliegue.yml` → GitHub Pages (`prueba` → `build` → deploy) |
 
 **Sin backend, sin cuentas, sin base de datos, sin compras in-app.**
 
@@ -133,17 +133,21 @@ npm.cmd run iconos     # regenerar iconos PNG desde SVG
 > **Convención del usuario:** «haz un commit» = **commit + push**.
 
 ```bash
-git push origin HEAD:main     # la CI y Pages solo se disparan en `main`
+git push origin HEAD:main     # el despliegue a Pages solo se dispara en `main`
 gh run list                   # estado del último despliegue
 gh workflow run despliegue.yml
 ```
 
-> El repo nace en **`main`** con upstream configurado: push normal. Para Android (Fase 7):
+> **Workflows (Fase 7):** `despliegue.yml` corre en cada **push a `main`** (prueba → build →
+> Pages) y `ci.yml` se queda solo con los **pull requests** para no duplicar trabajo. Pages
+> está habilitado con `build_type: workflow` (fuente: GitHub Actions).
+
+> El repo nace en **`main`** con upstream configurado: push normal. Para Android (Fase 8):
 > mismo tramo de máquina que `quiz-historia` (JDK 17 x64 Temurin, `local.properties`,
 > `bubblewrap.cmd`), y añadir la entrada `com.andreumarbor.triunfo` al `assetlinks.json` de
 > `andreu-marbor.github.io`.
 
-**URLs (previstas):** web → `https://andreu-marbor.github.io/triunfo/` · repo → `https://github.com/andreu-marbor/triunfo`
+**URLs:** web → `https://andreu-marbor.github.io/triunfo/` (**publicada**, Fase 7) · repo → `https://github.com/andreu-marbor/triunfo`
 
 ## ⚠️ Seguridad: datos sensibles — NUNCA al repo
 

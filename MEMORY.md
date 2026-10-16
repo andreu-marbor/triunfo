@@ -315,3 +315,28 @@ mesa en móvil — jsdom no calcula layout ni dispara gestos reales.
 **Pendiente inmediato (próxima sesión):** Fase 7 — `despliegue.yml` (prueba → build → Pages), comprobar que la fuente de Pages está en "GitHub Actions", medir Lighthouse PWA ≥ 90 y verificar el modo avión.
 
 **Revisar en dispositivo real:** instalabilidad en Android/iOS (A2HS), comportamiento del SW al hacer deploy de una versión nueva (debe actualizar en la segunda visita) y los efectos de sonido con audio real (jsdom no tiene `AudioContext`).
+
+---
+
+## 2026-10-16 — Fase 7 (Despliegue web) completada
+
+**Qué:** Triunfo está **publicado en GitHub Pages**: `https://andreu-marbor.github.io/triunfo/`. Verificado con peticiones reales: la raíz, `manifest.json`, `sw.js`, `icons/icono-192.png` y `icons/favicon.svg` devuelven **200** con su Content-Type correcto. El workflow de despliegue corre en verde (run `38954752519`: prueba → build → Pages, 1 m 11 s).
+
+**Hecho:**
+
+- **`.github/workflows/despliegue.yml`** (nuevo) — en cada **push a `main`** (y a mano con `workflow_dispatch`): `npm ci` → `prueba` → `build` → `configure-pages` → `upload-pages-artifact` (`dist/`) → `deploy-pages`. Permisos mínimos (`contents: read`, `pages: write`, `id-token: write`) y `concurrency: group: pages` para no mezclar despliegues. Patrón clonado de `sudoku`.
+- **`.github/workflows/ci.yml`** ajustado — disparaba en push a `main` **y** PRs; ahora **solo en pull requests** (más `workflow_dispatch`), porque los pushes a `main` ya los cubre el despliegue. Era la decisión anticipada en la Fase 1 («revisar los triggers al crear despliegue.yml»).
+- **Pages habilitado** con `build_type: workflow` (fuente: GitHub Actions), igual que los repos hermanos. Sin esto, `deploy-pages` falla con 404 en la API.
+- **AGENTS.md** actualizado: URLs reales (web publicada), nota de los dos workflows y corrección de la referencia a Android (Fase 8, no 7).
+
+**Incidencias (aprendizaje):**
+
+- **Pages no estaba habilitado** (`gh api repos/…/triunfo/pages` → 404): en los repos nuevos hay que habilitarlo a mano con `gh api -X POST repos/OWNER/REPO/pages -f build_type=workflow` **antes** o en paralelo al primer despliegue; el resto de hermanos ya lo tenía.
+- El despliegue avisa de que **`actions/configure-pages@v5` y `upload-artifact@v4` apuntan a Node.js 20 (deprecado)** y se fuerzan a Node 24. No rompe nada hoy; vigilar cuando suban de versión mayores los oficiales.
+
+**Decisiones:**
+
+- **CI solo en PRs** (no en pushes a `main`): el despliegue ya ejecuta `prueba` + `build` en cada push, así que duplicarlos ahí solo consume cuota de Actions sin añadir señal.
+- El **criterio §8 de Lighthouse PWA ≥ 90 y modo avión queda pendiente de medición en navegador** (no automatizable desde la CLI aquí): se revisa en la Fase 9 (Pulido) con DevTools/Lighthouse sobre la URL publicada.
+
+**Pendiente inmediato (próxima sesión):** Fase 8 — Android (TWA con Bubblewrap, `com.andreumarbor.triunfo`, `assetlinks.json` en `andreu-marbor.github.io`, APK + AAB para Play Store). Antes o en la Fase 9: medir Lighthouse PWA sobre la web publicada.
