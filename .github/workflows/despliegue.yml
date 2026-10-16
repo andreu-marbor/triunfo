@@ -1,0 +1,62 @@
+# Despliegue automático de la PWA en GitHub Pages (Fase 7).
+# Cada push a `main` ejecuta las pruebas, compila y publica dist/ con HTTPS.
+# `ci.yml` sigue cubriendo los pull requests; aquí se ajustan los triggers
+# para no duplicar trabajo en `main` (decisión de la Fase 1, revisada aquí).
+name: Desplegar en GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # permite lanzarlo a mano desde la pestaña Actions
+
+# Permiso mínimo para publicar en Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# No mezclar despliegues simultáneos
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Configurar Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Pruebas (lógica + solver + i18n + pantallas)
+        run: npm run prueba
+
+      - name: Build de producción
+        run: npm run build
+
+      - name: Configurar Pages
+        uses: actions/configure-pages@v5
+
+      - name: Subir artefacto (dist/)
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Desplegar
+        id: deployment
+        uses: actions/deploy-pages@v4

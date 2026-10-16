@@ -1,13 +1,12 @@
-# CI — pruebas + build. Se ejecuta en pushes a `main` y en pull requests.
-# (Cuando llegue la Fase 7, despliegue.yml tomará el despliegue en Pages;
-# ajustar entonces los triggers para no duplicar trabajo.)
+# CI — pruebas + build en los PULL REQUESTS (Fase 7: los pushes a `main`
+# ya los cubre `despliegue.yml`, que hace prueba → build → Pages; aquí se
+# evita duplicar trabajo, decisión anticipada en la Fase 1).
 name: CI
 
 on:
-  push:
-    branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch: # permite lanzarlo a mano
 
 jobs:
   build:
