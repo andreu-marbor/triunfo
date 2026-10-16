@@ -11,5 +11,17 @@ Thumbs.db
 *.keystore
 *.jks
 *.p12
+bubblewrapConfig/
 .env
 local.properties
+
+# --- Android / Gradle (generado por Bubblewrap: Fase 8) ---
+.gradle/
+build/
+app/build/
+*.apk
+*.aab
+*.apks
+*.idsig
+gradle-app.setting
+.cxx/

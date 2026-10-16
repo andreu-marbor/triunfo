@@ -340,3 +340,35 @@ mesa en móvil — jsdom no calcula layout ni dispara gestos reales.
 - El **criterio §8 de Lighthouse PWA ≥ 90 y modo avión queda pendiente de medición en navegador** (no automatizable desde la CLI aquí): se revisa en la Fase 9 (Pulido) con DevTools/Lighthouse sobre la URL publicada.
 
 **Pendiente inmediato (próxima sesión):** Fase 8 — Android (TWA con Bubblewrap, `com.andreumarbor.triunfo`, `assetlinks.json` en `andreu-marbor.github.io`, APK + AAB para Play Store). Antes o en la Fase 9: medir Lighthouse PWA sobre la web publicada.
+
+---
+
+## 2026-10-16 — Fase 8 (Android / TWA) completada
+
+**Qué:** Triunfo empaquetado como TWA con Bubblewrap: **`com.andreumarbor.triunfo`**, `twa-manifest.json` escrito a mano (patrón del `twa-manifest.json` de `quiz-historia`), proyecto Android generado, **APK firmado + AAB** construidos y verificados, y entrada de Digital Asset Links publicada en el sitio personal. `npm.cmd run prueba` en verde (351 comprobaciones) y `npm.cmd run build` en verde antes de tocar nada.
+
+**Hecho:**
+
+- **`twa-manifest.json`** (nuevo, trackeado) — `packageId com.andreumarbor.triunfo`, host `andreu-marbor.github.io`, `startUrl`/`fullScopeUrl` `https://andreu-marbor.github.io/triunfo/`, `webManifestUrl` → `manifest.json` (el de aquí, no `manifest.webmanifest` como el quiz), colores del tapete (`#14683c` / oscuro `#0d4a2b`), iconos 512 y maskable publicados, `fallbackType: customtabs`, `minSdk 21`, versión **1.0 / versionCode 1**.
+- **Keystore propio** (§9.1): `keytool -genkeypair` con el **JDK de Bubblewrap** (`%USERPROFILE%\.bubblewrap\jdk\jdk-17.0.20.1+1`) → `./android.keystore` (gitignored), alias `android`, RSA-2048, validez **10.000 días**, DN `CN=andreu-marbor, OU=Portfolio, O=GitHub, C=ES` (coherente con los otros proyectos); contraseña aleatoria de 36 hex en **`%USERPROFILE%\.bubblewrap\keystore-pass-triunfo.txt`** (fuera del repo). Confirmado con `git check-ignore`.
+- **Proyecto Android generado** — `npx.cmd bubblewrap update --skipVersionUpgrade` (crea `app/`, `build.gradle`, `settings.gradle`, `gradle.properties`, `gradlew*`, `gradle/`, `store_icon.png` y `manifest-checksum.txt`) y `npx.cmd bubblewrap build` → **`app-release-signed.apk` + `app-release-bundle.aab`** (con `BUBBLEWRAP_KEYSTORE_PASSWORD`/`BUBBLEWRAP_KEY_PASSWORD` + `JAVA_HOME` + `ANDROID_HOME`). Copia de comodidad en `Downloads\Triunfo-1.0.{apk,aab}`.
+- **Verificación (criterio §8)** — `apksigner verify --print-certs` → **SHA-256 `5cc775f6cb574aca44fb3f0e1561ae920fbdaf60d66a5c1d1c24325a8f298912`** = huella del keystore ✓ (los `WARNING: META-INF/… not protected` son informativos de AGP, igual que en el quiz). `aapt dump badging` → `name='com.andreumarbor.triunfo' versionCode='1' versionName='1.0'`, `minSdk 21`, `targetSdk 36`, etiqueta «Triunfo».
+- **Digital Asset Links** — bloque nuevo de `com.andreumarbor.triunfo` (huella en `AA:BB:…` mayúsculas) añadido a `andreu-marbor.github.io/.well-known/assetlinks.json` (**4 paquetes**) y pusheado con `git push origin HEAD:main` (commit `de30330`).
+- **`.gitignore`** ampliado: `.gradle/`, `build/`, `app/build/`, `*.apk/aab/apks/idsig`, `gradle-app.setting`, `.cxx/`, `bubblewrapConfig/`.
+- **AGENTS.md** — árbol actualizado (ficheros TWA y proyecto generado) y nueva sección **«Android (Fase 8 · TWA)»** con el bloque de comandos exacto (entornos, `update --skipVersionUpgrade`, `build`, `apksigner`), la nota del checksum y la verificación por API de Google.
+
+**Incidencias (aprendizaje):**
+
+- **`bubblewrap build` sin proyecto generado** falla con `gradlew.bat no se reconoce`: la primera ejecución se quedó a medias porque el asistente de «regenerate your project?» pregunta después `versionName` y `versionCode`, y **los prompts de inquirer no amortiguan el stdin piped en esta máquina** (`@('Y','1.0','1') | npx…` consume todo el stdin en el primer prompt y el segundo muere con EOF). **Solución: no pelear con los prompts** → `manifest-checksum.txt` (si existe y coincide, el build no pregunta nada) + `bubblewrap update --skipVersionUpgrade` (genera el proyecto sin ninguna pregunta) y ya después `bubblewrap build` solo.
+- **Formato del checksum descubierto empíricamente**: `manifest-checksum.txt` es el **SHA-1 (hex minúsculas) del contenido de `twa-manifest.json`** — verificado contra el de `quiz-historia` (`e9caf3b3…` = SHA-1 de su manifiesto).
+- **`apksigner.bat` necesita `JAVA_HOME`** (`ERROR: JAVA_HOME is not set`): el build-tools no trae JRE; hay que exportar el JDK de Bubblewrap antes de verificar (el `aapt dump badging` sí funciona sin él).
+
+**Decisiones:**
+
+- **Keystore nuevo propio** (no reutilizar el de los otros proyectos): cada app con su clave, como `quiz-historia` — el de `tres-en-raya`/`sudoku` comparte huella entre ellos, pero aquí se prefirió un tercero independiente. Ventaja añadida: si se pierde, solo afecta a Triunfo.
+- **`twa-manifest.json` escrito a mano** en vez de `bubblewrap init` (que además pide `--manifest` y es interactivo): se copió el patrón exacto del de `quiz-historia` y solo se cambiaron identidad/colores/URLs; después `update` lo validó contra el manifest web publicado sin tocarlo.
+- **`update` siempre con `--skipVersionUpgrade`**: la subida de versión (`appVersionName`/`appVersionCode`) se hace editando `twa-manifest.json` a mano en cada release y sin autoincremento, para no depender de prompts interactivos.
+
+**Pendiente inmediato (próxima sesión):** Fase 9 — Pulido: animación de triunfo al ganar (momento estrella, efecto `triunfo` ya reservado), medir **Lighthouse PWA ≥ 90** y modo avión sobre la URL publicada, auditoría de 1000 semillas (tasa de rechazo del solver). Subida a **Play Store** (consola, cuenta de desarrollador) queda fuera del alcance automático: el AAB está listo en `Downloads\Triunfo-1.0.aab`.
+
+**Revisar en dispositivo real:** la TWA sin barra de URL (depende de que Google sirva ya el `assetlinks.json` nuevo — caché de hasta ~1 h en su API), el icono en el launcher y el splash con los colores del tapete.

@@ -85,8 +85,15 @@ triunfo/
 │   ├── ui/                  # menu · mesa · carta · hud · resultado · lang · estadisticas
 │   └── styles/              # base.css (variables, tapete) · cartas.css · app.css
 ├── public/                  # manifest, sw.js, icons (SVG)
-└── (Fase 7: twa-manifest.json + android.keystore; app/, gradle/... GENERADOS, no editar)
+├── twa-manifest.json · manifest-checksum.txt   # TWA (Fase 8; checksum = SHA-1 del manifiesto)
+├── android.keystore         # FIRMA — GITIGNORED (contraseña en %USERPROFILE%\.bubblewrap\)
+└── build.gradle · settings.gradle · gradle.properties · gradlew* · gradle/ · app/
+                            # proyecto Android GENERADO por `bubblewrap update` (no editar a mano)
 ```
+
+> 📌 **Empaquetado Android (Fase 8):** todo el proyecto Android de arriba lo genera
+> `bubblewrap update` a partir de `twa-manifest.json`. **No editarlos a mano.** `build/`,
+> `.gradle/`, `app/build/`, `local.properties`, `*.apk/aab` y `*.keystore` van en `.gitignore`.
 
 ## Lógica del juego (el corazón — PLAN.md §9)
 
@@ -142,12 +149,38 @@ gh workflow run despliegue.yml
 > Pages) y `ci.yml` se queda solo con los **pull requests** para no duplicar trabajo. Pages
 > está habilitado con `build_type: workflow` (fuente: GitHub Actions).
 
-> El repo nace en **`main`** con upstream configurado: push normal. Para Android (Fase 8):
-> mismo tramo de máquina que `quiz-historia` (JDK 17 x64 Temurin, `local.properties`,
-> `bubblewrap.cmd`), y añadir la entrada `com.andreumarbor.triunfo` al `assetlinks.json` de
-> `andreu-marbor.github.io`.
+> El repo nace en **`main`** con upstream configurado: push normal.
 
-**URLs:** web → `https://andreu-marbor.github.io/triunfo/` (**publicada**, Fase 7) · repo → `https://github.com/andreu-marbor/triunfo`
+### Android (Fase 8 · TWA)
+
+> Mismo tramo de máquina que `quiz-historia`: **JDK 17** en `%USERPROFILE%\.bubblewrap\jdk\`,
+> SDK en `%LOCALAPPDATA%\Android\Sdk` (ya en `config.json` de Bubblewrap) y `local.properties`
+> (gitignored) con `sdk.dir=...`. **No hay que instalar nada nuevo.**
+
+```bash
+# Regenerar el proyecto Android (solo si cambia twa-manifest.json; SIN --skipVersionUpgrade
+# preguntará la versión y los prompts no admitten piped stdin en esta máquina)
+$env:JAVA_HOME = "$env:USERPROFILE\.bubblewrap\jdk\jdk-17.0.20.1+1"
+$env:ANDROID_HOME = "$env:LOCALAPPDATA\Android\Sdk"
+$pass = (Get-Content "$env:USERPROFILE\.bubblewrap\keystore-pass-triunfo.txt" -Raw).Trim()
+$env:BUBBLEWRAP_KEYSTORE_PASSWORD = $pass; $env:BUBBLEWRAP_KEY_PASSWORD = $pass
+npx.cmd bubblewrap update --skipVersionUpgrade   # genera app/, gradle/, gradlew...
+npx.cmd bubblewrap build                         # → app-release-signed.apk + app-release-bundle.aab
+
+# Verificar firma (huella = 5C:C7:75:F6:…:89:12)
+$env:JAVA_HOME = "$env:USERPROFILE\.bubblewrap\jdk\jdk-17.0.20.1+1"
+%LOCALAPPDATA%\Android\Sdk\build-tools\36.1.0\apksigner.bat verify --print-certs app-release-signed.apk
+```
+
+- **Keystore:** `./android.keystore` propio (gitignored), alias `android`, RSA-2048, 10.000 días;
+  contraseña aleatoria de 36 hex en **`%USERPROFILE%\.bubblewrap\keystore-pass-triunfo.txt`**
+  (fuera del repo; PLAN §9.1). Si `build` pide checksum: es el **SHA-1** de `twa-manifest.json`
+  en `manifest-checksum.txt` (lo escribe `bubblewrap update`).
+- **Digital Asset Links:** entrada `com.andreumarbor.triunfo` añadida en
+  `andreu-marbor.github.io/.well-known/assetlinks.json` (4 paquetes). Verificar con la API de
+  Google: `https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://andreu-marbor.github.io&relation=delegate_permission/common.handle_all_urls`.
+
+**URLs:** web → `https://andreu-marbor.github.io/triunfo/` (**publicada**, Fase 7) · repo → `https://github.com/andreu-marbor/triunfo` · APK/AAB → `bubblewrap build` (copia en `Downloads\Triunfo-1.0.*`)
 
 ## ⚠️ Seguridad: datos sensibles — NUNCA al repo
 
