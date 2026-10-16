@@ -1,0 +1,166 @@
+# AGENTS.md — Información del proyecto
+
+## ¿Qué es este proyecto?
+
+**"Triunfo"** — PWA (y TWA para Android) de **solitario con baraja española** (oros, copas, espadas,
+bastos). El solitario más jugado del mundo (Klondike) vestido con la baraja de toda la vida en el
+Mediterráneo — y con dos valores diferenciales que ningún clon tiene: **toda partida sale ganable
+(verificada por solver)** y **modo diario con racha** tipo Wordle.
+
+- **Objetivo:** juego publicado (web en GitHub Pages + APK/AAB en Play Store) con motor de juego
+  propio, garantía de victoria y estadísticas.
+- **Público:** jugadores casuales de cartas (demanda masiva y perenne) + revisores de portfolio.
+- **Idioma del código y la documentación:** español. **Interfaz multilenguaje: `es` / `ca` / `en`**
+  (patrón de `sudoku` y `trencadis`).
+- **Plan completo:** **[PLAN.md](./PLAN.md)** — leérselo antes de tocar nada.
+
+## Identidad (no es un clon más)
+
+- **Nombre:** Triunfo — término de las cartas valencianas/españolas (el *triunfo* o palo que gana)
+  y doble sentido de "triunfo/victoria". Package Android: `com.andreumarbor.triunfo`.
+- **Diferencial nº 1 — baraja española de 40 cartas:** 1–7, sota, caballo, rey de **oros, copas,
+  espadas y bastos**. Toda la comunidad de Klondike usa baraja francesa (picas/corazones...); la
+  baraja española es la identidad visual y el gancho cultural (España, Latinoamérica, Italia).
+  Palo de triunfo aleatorio por partida = sabor de juego de cartas real, no de puzzle.
+- **Diferencial nº 2 — "sin mala suerte":** las partidas se **generan y verifican ganables** con
+  un solver propio antes de repartir. El 30–40 % de Klondike clásico es intratables; aquí esa
+  queja desaparece. Es el "look at my algorithm" del proyecto (mismo espíritu que el solver de
+  nonogramas en `trencadis`).
+- **Diferencial nº 3 — modo diario con racha** (semilla = fecha, mismo reparto para todos,
+  sin servidor) + modo libre ilimitado.
+- **Estética:** tapete verde valenciano + cartas dibujadas **solo con CSS/SVG** (sin assets de
+  imagen; los palos como SVG inline con `currentColor`). Cada palo con su color cerámico
+  (oros dorado, copas grana, espadas azul, bastos verde) — paleta vía variables CSS.
+- **Momento estrella:** al ganar, las cartas se "dan la vuelta" una a una mostrando el palo de
+  triunfo con animación (CSS), y el HUD celebra el triunfo.
+
+## Diferencial vs. la competencia (resumen para el README futuro)
+
+| Los demás | Triunfo |
+|---|---|
+| Baraja francesa genérica | Baraja española (oros/copas/espadas/bastos) |
+| Repartos a menudo intratables | **Toda partida verificada ganable** |
+| Sin progreso | Modo diario + racha + estadísticas |
+| Ads y suscripciones | Gratis, sin backend, offline |
+
+## Stack tecnológico
+
+| Capa | Tecnología |
+|---|---|
+| Lenguaje | TypeScript |
+| Build | Vite |
+| Render | DOM + CSS (cartas = divs + SVG inline; **sin canvas**) |
+| Estilo | CSS con variables (temas tapete) |
+| i18n | Sistema propio con JSON (`es`, `ca`, `en`) — patrón de `sudoku` |
+| Persistencia | `localStorage` (centralizado) |
+| Sonido | WebAudio (rondeos, victoria; sin assets) |
+| Tests | esbuild + Node (`npm.cmd run prueba`) — sin frameworks |
+| PWA | manifest + service worker cache-first |
+| Android | PWA + Bubblewrap (sin Android Studio) |
+| CI/CD | GitHub Actions → GitHub Pages (`prueba` → `build` → deploy) |
+
+**Sin backend, sin cuentas, sin base de datos, sin compras in-app.**
+
+## Estructura de directorios
+
+> 📌 Árbol **previsto** (PLAN.md §3). Si el árbol real acaba difiriendo, **actualizar este fichero**.
+
+```
+triunfo/
+├── PLAN.md · MEMORY.md · AGENTS.md · README.md · LICENSE
+├── index.html · package.json · tsconfig.json · vite.config.ts   # base: '/triunfo/'
+├── .github/workflows/       # ci.yml (build+pruebas) · despliegue.yml (Pages, Fase 6)
+├── scripts/
+│   └── generar-iconos.mjs   # iconos PWA con sharp
+├── pruebas/                 # esbuild + Node (ayudante propio, sin frameworks)
+│   ├── ayudante.ts          # mini-ayudante de aserciones
+│   ├── cartas.ts · motor.ts · solver.ts · reparto.ts · diaria.ts
+│   └── pantallas.ts         # jsdom solo aquí
+├── src/
+│   ├── main.ts              # arranque + router de pantallas
+│   ├── persistencia.ts · efectos.ts (WebAudio)
+│   ├── logica/              # cartas · motor (reglas Klondike) · solver · reparto · diaria
+│   ├── i18n/                # index.ts + es.json · ca.json · en.json
+│   ├── ui/                  # menu · mesa · carta · hud · resultado · lang · estadisticas
+│   └── styles/              # base.css (variables, tapete) · cartas.css · app.css
+├── public/                  # manifest, sw.js, icons (SVG)
+└── (Fase 7: twa-manifest.json + android.keystore; app/, gradle/... GENERADOS, no editar)
+```
+
+## Lógica del juego (el corazón — PLAN.md §9)
+
+- **`logica/cartas.ts`** — modelo inmutable de la baraja española de 40: palo (oros, copas,
+  espadas, bastos) + rango (1–7, 10=sota, 11=caballo, 12=rey). Mazo como `Carta[]` con índice;
+  shuffle determinista con **semilla** (`mulberry32`, patrón de `trencadis`/`sudoku`).
+- **`logica/motor.ts`** — reglas del Klondike con palo de triunfo: movimiento legal (alternar
+  color → en baraja española: **contraste de palo** §9.2), voltear de mazo, fundaciones por
+  palo ascendente, vacío recibe rey, triunfo escala comiendo cartas (sabor de "brisca" §9.3).
+  La lógica pura **no toca el DOM**: `aplicar(movimiento, estado) → estado | null`.
+- **`logica/solver.ts`** — búsqueda (DFS + heurística: mover a fundaciones primero, penalizar
+  voltear mazo sin necesidad) que resuelve un reparto dado. Presupuesto de nodos; si se agota,
+  se descarta el reparto. **Nunca** se juega un reparto no verificado (excepto modo "clásico"
+  opcional sin garantía, §9.5).
+- **`logica/reparto.ts`** — genera semilla → reparte → verifica con solver → publica/entrega.
+- **`logica/diaria.ts`** — fecha (AAAA-MM-DD) → semilla → mismo reparto para todos; racha y
+  estadísticas en `localStorage` (patrón del quiz y del modo diario de `trencadis`).
+
+## Convenciones del proyecto
+
+- **Todo texto visible al usuario pasa por `t('clave')`** — nunca cadenas hardcodeadas. Claves
+  planas en inglés; JSON en `es`/`ca`/`en` **desde la Fase 1**.
+- **Colores SIEMPRE vía variables CSS** (`--tapete`, `--oros`, `--copas`...), nunca valores fijos.
+- **Código, comentarios y documentación en español.**
+- Cartas dibujadas con **DOM + SVG inline** (nada de PNGs por carta: son 40 vectores paramétricos).
+- Nombres de archivo en minúscula/sin espacios. Persistencia centralizada en `persistencia.ts`.
+- Pruebas deterministas (todas las del solver/reparto con semillas fijas).
+
+## Comandos útiles
+
+> ⚠️ PowerShell bloquea los `.ps1`: usar siempre **`npm.cmd`**, **`npx.cmd`**, **`bubblewrap.cmd`**.
+
+```bash
+npm.cmd install        # dependencias
+npm.cmd run dev        # servidor de desarrollo
+npm.cmd run build      # producción (tsc --noEmit + vite)
+npm.cmd run preview    # previsualizar build
+npm.cmd run prueba     # TODO: lógica + solver + pantallas (todo verde antes de commit)
+npm.cmd run iconos     # regenerar iconos PNG desde SVG
+```
+
+### Git / despliegue
+
+> **Convención del usuario:** «haz un commit» = **commit + push**.
+
+```bash
+git push origin HEAD:main     # la CI y Pages solo se disparan en `main`
+gh run list                   # estado del último despliegue
+gh workflow run despliegue.yml
+```
+
+> El repo nace en **`main`** con upstream configurado: push normal. Para Android (Fase 7):
+> mismo tramo de máquina que `quiz-historia` (JDK 17 x64 Temurin, `local.properties`,
+> `bubblewrap.cmd`), y añadir la entrada `com.andreumarbor.triunfo` al `assetlinks.json` de
+> `andreu-marbor.github.io`.
+
+**URLs (previstas):** web → `https://andreu-marbor.github.io/triunfo/` · repo → `https://github.com/andreu-marbor/triunfo`
+
+## ⚠️ Seguridad: datos sensibles — NUNCA al repo
+
+- **Prohibido subir a git**: keystores (`*.keystore`, `*.jks`, `*.p12`), contraseñas (keystore, Bubblewrap, APIs, servicios), claves API/tokens, ficheros `.env`, credenciales de Render/GitHub y `local.properties`.
+- **Cómo se guardan**: en rutas **fuera del repo** — contraseñas de keystore en `%USERPROFILE%\.bubblewrap\` (PLAN.md §9.1), entornos en variables de entorno. Todo lo anterior, además, **explícitamente en `.gitignore`**.
+- **Antes de cada commit grande:** revisar `git status` y comprobar `git ls-files | Select-String -Pattern '(keystore|\.env|secret|passw|token|key)'` → debe salir vacío.
+- **Si algo se sube por error:** rotar/cambiar la credencial **inmediatamente** — borrar el commit no basta (el historial, clones y forks conservan el dato).
+- Auditoría recurrente: `git log --all --diff-filter=A --name-only` detecta ficheros que alguna vez se trackearon (auditoría 2026-10-16: los 10 proyectos de la carpeta, limpios).
+
+## ⚠️ Memoria del proyecto
+
+Existe **[MEMORY.md](./MEMORY.md)** con cambios, incidencias y estado de fases.
+
+**Instrucción para agentes:** tras cada cambio relevante o incidencia, **añadir** una entrada
+(fecha, descripción, solución). **No borrar ni reescribir entradas anteriores.** Si cambia el
+árbol o los comandos, actualizar también este `AGENTS.md`.
+
+## Plan
+
+Fases en **[PLAN.md](./PLAN.md)**: 1 Cimiento · 2 Cartas y motor · 3 Solver y reparto ganable ·
+4 Interfaz de mesa · 5 Modo diario y estadísticas · 6 PWA · 7 Despliegue web · 8 Android · 9 Pulido.
