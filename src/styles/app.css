@@ -185,3 +185,104 @@
   border-color: var(--papel-borde);
   background: transparent;
 }
+
+/* --- Menú: acciones y racha (Fase 5) --- */
+
+.acciones {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  width: min(20rem, 100%);
+}
+
+.acciones .boton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.racha {
+  margin: 0.2rem 0 0;
+  font-weight: 600;
+  color: var(--acento);
+}
+
+.sello-hecho {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 999px;
+  background: var(--acento);
+  color: var(--papel);
+  font-size: 0.9rem;
+  line-height: 1;
+}
+
+/* --- Pantalla de estadísticas (Fase 5) --- */
+
+.rejilla-tarjetas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: 0.7rem;
+  width: 100%;
+  margin: 1rem 0;
+}
+
+.tarjeta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.8rem 0.9rem;
+  border: 1px solid rgb(255 255 255 / 0.28);
+  border-radius: var(--radio);
+  background: rgb(0 0 0 / 0.16);
+  text-align: left;
+}
+
+.tarjeta-etiqueta {
+  font-size: 0.8rem;
+  color: var(--texto-tenue);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.tarjeta-valor {
+  font-size: 1.35rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--texto);
+}
+
+.tarjeta-extra {
+  font-size: 0.8rem;
+  color: var(--texto-tenue);
+}
+
+/* Barra de los últimos 7 días */
+.barra-dias {
+  display: flex;
+  gap: 0.4rem;
+  margin: 0.6rem 0 0.2rem;
+  justify-content: center;
+}
+
+.punto-dia {
+  width: 0.9rem;
+  height: 0.9rem;
+  border-radius: 999px;
+  border: 1px solid rgb(255 255 255 / 0.35);
+  background: rgb(0 0 0 / 0.18);
+}
+
+.punto-dia.ganado {
+  background: var(--acento);
+  border-color: var(--acento);
+}
+
+.punto-dia.hoy {
+  outline: 2px solid var(--acento);
+  outline-offset: 2px;
+}

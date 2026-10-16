@@ -35,6 +35,9 @@ import { repartoGanable } from '../src/logica/reparto';
 import { resolver } from '../src/logica/solver';
 import { aplicarIdiomaInicial } from '../src/i18n';
 import { mostrarMesa } from '../src/ui/mesa';
+import { mostrarMenu } from '../src/ui/menu';
+import { mostrarEstadisticas } from '../src/ui/estadisticas';
+import { estadisticasVacias } from '../src/logica/estadisticas';
 import { comprobar, finalizar, grupo } from './ayudante';
 
 aplicarIdiomaInicial();
@@ -187,5 +190,65 @@ comprobar(
   mesaFinal.estado.movimientos === movimientosFinales,
   'tras destruir la mesa, los gestos ya no hacen nada',
 );
+
+// --- 7. Pantallas Fase 5: menú, partida del día y estadísticas ---
+grupo('Pantallas Fase 5 (menú, día y estadísticas)');
+// Se montan directamente sobre #app, como en el flujo real de la app.
+const estados: string[] = [];
+const menu = mostrarMenu(raiz, {
+  estadisticas: estadisticasVacias(),
+  diarioHecho: false,
+  onJugar: (modo) => estados.push(`jugar:${modo}`),
+  onEstadisticas: () => estados.push('estadisticas'),
+});
+const botonesModo = raiz.querySelectorAll<HTMLButtonElement>('[data-modo]');
+comprobar(botonesModo.length === 2, 'el menú ofrece dos modos: Día y Libre');
+comprobar(
+  Array.from(botonesModo).some((b) => b.dataset.modo === 'dia'),
+  'existe el botón de partida del día',
+);
+comprobar(
+  Array.from(botonesModo).some((b) => b.dataset.modo === 'libre'),
+  'existe el botón de partida libre',
+);
+comprobar(raiz.querySelector('[data-estadisticas]') !== null, 'existe el acceso a estadísticas');
+comprobar(
+  raiz.querySelectorAll('.sello-hecho').length === 0,
+  'el día aún no está hecho: sin sello',
+);
+
+// Los botones disparan el modo correcto.
+clic(raiz.querySelector<HTMLButtonElement>('[data-modo="dia"]'));
+comprobar(estados[estados.length - 1] === 'jugar:dia', 'el botón del día pide partida DÍA');
+clic(raiz.querySelector<HTMLButtonElement>('[data-modo="libre"]'));
+comprobar(estados[estados.length - 1] === 'jugar:libre', 'el botón libre pide partida LIBRE');
+
+// El sello aparece cuando el diario de hoy ya está hecho.
+menu();
+const menuHecho = mostrarMenu(raiz, {
+  estadisticas: estadisticasVacias(),
+  diarioHecho: true,
+  onJugar: () => {},
+  onEstadisticas: () => {},
+});
+comprobar(
+  raiz.querySelectorAll('.sello-hecho').length === 1,
+  'con el día hecho se muestra el sello',
+);
+menuHecho();
+
+// Abrir estadísticas: pinta la rejilla de tarjetas y vuelve al menú.
+const stats = mostrarEstadisticas(raiz, {
+  estadisticas: estadisticasVacias(),
+  onVolver: () => estados.push('volver'),
+});
+comprobar(raiz.querySelector('.rejilla-tarjetas') !== null, 'la pantalla de estadísticas pinta la rejilla');
+comprobar(
+  raiz.querySelectorAll('.tarjeta').length >= 5,
+  'hay varias tarjetas de estadística',
+);
+clic(raiz.querySelector('[data-volver]'));
+comprobar(estados[estados.length - 1] === 'volver', 'el botón de volver regresa al menú');
+stats();
 
 finalizar();

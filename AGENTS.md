@@ -74,7 +74,7 @@ triunfo/
 │   └── generar-iconos.mjs   # iconos PWA con sharp
 ├── pruebas/                 # esbuild + Node (ayudante propio, sin frameworks)
 │   ├── ayudante.ts          # mini-ayudante de aserciones
-│   ├── i18n.ts · cartas.ts · motor.ts · solver.ts · reparto.ts · diaria.ts
+│   ├── i18n.ts · cartas.ts · motor.ts · solver.ts · reparto.ts · diaria.ts · estadisticas.ts
 │   └── pantallas.ts         # jsdom solo aquí
 ├── src/
 │   ├── main.ts              # arranque + router de pantallas

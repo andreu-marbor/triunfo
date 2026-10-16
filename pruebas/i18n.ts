@@ -18,7 +18,7 @@ comprobar(claves(es).length === claves(en).length, 'es y en tienen el mismo nº 
 comprobar(claves(es).join('|') === claves(ca).join('|'), 'las claves de es y ca coinciden');
 comprobar(claves(es).join('|') === claves(en).join('|'), 'las claves de es y en coinciden');
 // El mínimo crece con cada fase que añade pantallas.
-comprobar(claves(es).length >= 20, `hay un número razonable de claves (${claves(es).length})`);
+comprobar(claves(es).length >= 40, `hay un número razonable de claves (${claves(es).length})`);
 
 // --- 2. Textos y placeholders ---
 grupo('Textos y placeholders');
@@ -50,6 +50,11 @@ const criticas = [
   'card.name',
   'palo.oros',
   'rank.11',
+  'menu.daily',
+  'menu.stats',
+  'stats.streak',
+  'stats.streakDays',
+  'stats.title',
 ];
 for (const clave of criticas) {
   comprobar(clave in es, `existe «${clave}»`);
@@ -71,9 +76,12 @@ comprobar(t('card.name', { rango: '11', palo: 'swords' }) === '11 of swords', 'e
 comprobar(CODIGOS.ca === 'VA', 'el código visible del valenciano es VA');
 comprobar(NOMBRES.ca === 'Valencià', 'el nombre del valenciano es Valencià');
 comprobar(t('clave.inexistente') === 'clave.inexistente', 'clave inexistente devuelve la clave');
-setLang('ca');
-comprobar(t('rank.11') === 'cavaller', 'ca: rank.11 (cavaller)');
-comprobar(t('game.moves', { n: 3 }) === 'Moviments: 3', 'ca: contador de movimientos');
+setLang('es');
+comprobar(t('rank.11') === 'caballo', 'es: rank.11 (caballo)');
+comprobar(t('game.moves', { n: 3 }) === 'Movimientos: 3', 'es: contador de movimientos');
+setLang('en');
+comprobar(t('stats.streak') === 'Streak', 'en: stats.streak');
+comprobar(t('menu.daily') === 'Daily game', 'en: menu.daily');
 setLang('es');
 
 finalizar();

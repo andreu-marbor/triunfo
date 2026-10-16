@@ -235,3 +235,41 @@ con modos Día/Libre/Clásico.
 **Revisar en dispositivo real (no cubierto por jsdom):** drag&drop con pointer events sobre
 pantalla táctil (umbral, `setPointerCapture`, `elementFromPoint`) y layout responsivo de la
 mesa en móvil — jsdom no calcula layout ni dispara gestos reales.
+
+---
+
+---
+
+## 2026-10-16 — Fase 5 (Modo diario y estadísticas) completada
+
+**Qué:** 
+pm.cmd run prueba en verde con **340 comprobaciones** (82 i18n + 30 cartas + 72 motor + 32 solver + 15 reparto + 28 diaria + 40 estadísticas + 41 pantallas) y 
+pm.cmd run build (tsc --noEmit + vite) en verde.
+
+**Hecho:**
+
+- **src/logica/diaria.ts** — fecha local (AAAA-MM-DD) → semillaDelDia (hash FNV-1a de 32 bits de la cadena del día): mismo día → misma semilla → epartoGanable regenera **exactamente el mismo reparto para todo el mundo sin servidor** (§9.8). Puras echaLocal, esFechaValida, diasEntre y diaSiguiente (cruza mes/año/bisiesto contando en milisegundos UTC, no con setDate).
+- **src/logica/estadisticas.ts** — modelo Estadisticas (racha, mejor racha, último día ganado, días jugados, victorias diario/libre, derrotas, movimientos y tiempos). Racha **tipo Wordle: un intento por día** — vanzarRacha sube al día siguiente, reinicia tras un hueco, no infla al repetir el mismo día y no castiga con el reloj atrasado. Registro puro e inmutable de victoria/derrota (diario y libre) + 	iempoMedioLibreMs y movimientosMediosLibre.
+- **src/almacenamiento/estadisticas.ts** — guarda/recupera en localStorage con **lectura defensiva**: cualquier campo corrupto o fuera de rango cae a su valor por defecto (racha negativa → 0, fecha ilegible → null, tiempos no numéricos se descartan).
+- **src/persistencia.ts** — refactor a patrón **Almacen inyectable** (interfaz getItem/setItem/removeItem, lmacenPorDefecto()): la lógica se testea en Node con un almacén falso, sin navegador.
+- **UI** — src/ui/menu.ts con modos **Día** y **Libre** + acceso a estadísticas, sello «hecho» cuando el diario de hoy está jugado y fila de racha. src/ui/estadisticas.ts (nueva): rejilla de tarjetas (racha, mejor racha, victorias, derrotas, medias y mejores tiempos/movimientos) y barra de los últimos 7 días. src/main.ts: router con los dos modos, cronómetro por partida, y guardado de resultado al ganar o al salir.
+- **i18n** — claves nuevas menu.daily, menu.free, menu.stats, stats.* en es/ca/en; pruebas/i18n.ts sube el umbral a ≥40 y valida las claves nuevas.
+- **Pruebas** — pruebas/diaria.ts (28: determinismo de la semilla, estabilidad, dispersión en 30 días, cruces de mes/año/bisiesto) y pruebas/estadisticas.ts (40: racha Wordle, medias, saneado defensivo, borrar/guardar sin almacén). pruebas/pantallas.ts ampliada a 41: menú con dos modos, sello del día, dispatch de Día/Libre y rejilla de estadísticas.
+
+**Incidencias (aprendizaje):**
+
+- **Expectativa errónea en diasEntre**: la prueba esperaba 2 días del 28 de febrero al 1 de marzo de 2026; en realidad son **1** (la función era correcta, el supuesto mío no). Lección: en cálculo de fechas, verificar con un Date real antes de congelar una expectativa.
+- **Import mal ubicado**: lmacenamiento/estadisticas.ts importaba ./persistencia en vez de ../persistencia (el fichero está en src/). Esbuild lo cazó al empaquetar la prueba.
+- **exit code 1 falso en PowerShell**: 
+pm.cmd run prueba 2>&1 | Select-String devuelve 1 por el pipeado aunque todas las suites pasen. Para capturar el código real: redirigir a fichero (*>) o usar $LASTEXITCODE sin pipe.
+
+**Decisiones:**
+
+- **Un intento por día** en el diario (patrón Wordle): ganar dos veces el mismo día suma victorias pero no infla la racha; una derrota del día no la rompe, se rompe al llegar a un día sin haber ganado el anterior.
+- **Día y Libre** son los dos modos expuestos; el **Clásico sin garantía (§9.5)** queda para una pantalla posterior (no se pierde: epartoClasico ya existe).
+- La **derrota/abandono se registra al salir** desde la mesa (cerrarPartida), no dentro de ui/mesa.ts: la UI de la mesa no decide reglas de negocio, solo emite eventos.
+- El **diario usa epartoGanable** igual que el libre: la garantía de victoria también aplica al modo diario (§23 del PLAN).
+
+**Pendiente inmediato (próxima sesión):** Fase 6 — PWA: manifest, service worker cache-first (offline total tras la primera visita), iconos con sharp y efectos WebAudio (rondeos, victoria, triunfo).
+
+**Revisar en dispositivo real (no cubierto por jsdom):** persistencia real de localStorage en móvil y el modo Día al cruzar la medianoche con la app abierta (jsdom no avanza el reloj).
