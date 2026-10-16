@@ -72,3 +72,52 @@ la máquina). Cada repo mantiene su independencia.
 **Pendiente inmediato (próxima sesión):** Fase 2 — `logica/cartas.ts` (baraja española de 40 +
 shuffle `mulberry32` sembrado) y `logica/motor.ts` (reglas Klondike §9.2) con sus pruebas
 `pruebas/cartas.ts` y `pruebas/motor.ts`.
+
+---
+
+## 2026-10-16 — Fase 2 (Cartas y motor) completada
+
+**Qué:** `npm.cmd run prueba` en verde con **127 comprobaciones** (25 i18n + 30 cartas +
+72 motor) y `npm.cmd run build` (tsc + vite) en verde. El corazón del juego existe.
+
+**Hecho:**
+
+- **`src/logica/cartas.ts`** — modelo inmutable: `Palo` (oros/copas/espadas/bastos), `Rango`
+  (1–7, 10 sota, 11 caballo, 12 rey), `Carta { id, palo, rango, bocaAbajo }`. `peso(rango)`
+  (0=as … 9=rey), **`BANDO`/`contrastan` (§9.2)**: alto = oros+bastos, bajo = copas+espadas.
+  `mulberry32` + `barajar` determinista (no muta la entrada) y `barajaEspanola()` (40 cartas,
+  ids 0–39, boca arriba).
+- **`src/logica/motor.ts`** — `Estado`, `Movimiento` (`voltear` | `mover` con
+  origen descarte/columna/fundación y destino columna/fundación), `estadoInicial` (reparto
+  clásico: columnas 1…7 + **mazo de 12**; valida 40 cartas y ids únicos), **`aplicar(mov, est)
+  → Estado | null`** puro e inmutable (copia antes de escribir), `esVictoria` (40 en
+  fundaciones), **`posiblesMovimientos`** (enumera jugadas para la UI y el solver).
+- Reglas implementadas y testeadas (+/− por regla, PLAN §8): vacío → solo rey; descenso +
+  contraste de palo; secuencias arrastrables solo si son escalera alternada; fundación por palo
+  ascendente desde el 1 sin saltos y solo sueltas de a una; **volteo automático** de la carta
+  expuesta al vaciar la cima de una columna; **reciclaje infinito del mazo** sobre el descarte
+  (§9.6, comprueba que tras reciclar vuelve a salir la primera carta).
+- **Pruebas** `pruebas/cartas.ts` (30) y `pruebas/motor.ts` (72), fixtures hechos a mano con
+  ids correlativos; incluyen victoria sintética, inmutabilidad (snapshot JSON antes/después) y
+  que **todo movimiento listado por `posiblesMovimientos` sea legal según `aplicar`**.
+
+**Incidencias (aprendizaje):**
+
+- La comprobación «cada jugada posible cuenta un movimiento» cazó un bug real: `aplicarMover`
+  **no incrementaba `movimientos`** (solo lo hacía `voltear`). Corregido.
+- **Typo `bocaAbijo` vs `bocaAbajo`**: los literales usaban el nombre mal ordenado; las pruebas
+  pasaban (esbuild no typechequea y fixtures+lógica coincidían) pero `tsc` lo cazó en el build.
+  Lección: **`npm.cmd run build` es imprescindible** tras las pruebas; el typecheck cubre `src/`
+  aunque `pruebas/` solo se empaquete.
+
+**Decisiones:**
+
+- Fundación → columna: **permitida** (Klondike clásico; `aplicar` la admite y `posiblesMovimientos`
+  la enumera). Fundación → fundación: prohibida. El solver (Fase 3) podrá filtrar el origen
+  fundación para no desperdiciar presupuesto (nunca hace falta para ganar).
+- `estadoInicial` vive en `motor.ts` (mecánica de reparto) y `reparto.ts` (Fase 3) compondrá:
+  semilla → `barajar` → `estadoInicial` → verificar con solver.
+
+**Pendiente inmediato (próxima sesión):** Fase 3 — `logica/solver.ts` (DFS + heurísticas +
+presupuesto de nodos, §9.4) y `logica/reparto.ts`, con test de humo de 100 semillas
+resolubles y línea base de tiempos en esta entrada.

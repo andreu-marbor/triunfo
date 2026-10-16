@@ -23,6 +23,16 @@ export function comprobar(condicion: boolean, mensaje: string): void {
   }
 }
 
+/** Comprueba que `fn` lanza una excepción. */
+export function lanza(fn: () => unknown, mensaje: string): void {
+  try {
+    fn();
+    comprobar(false, mensaje);
+  } catch {
+    comprobar(true, mensaje);
+  }
+}
+
 /** Resumen final; termina el proceso con error si algo ha fallado. */
 export function finalizar(): void {
   console.log('');

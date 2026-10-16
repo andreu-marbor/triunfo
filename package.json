@@ -8,8 +8,10 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
-    "prueba": "npm run prueba:i18n",
-    "prueba:i18n": "esbuild pruebas/i18n.ts --bundle --platform=node --outfile=node_modules/.tmp/i18n.mjs --log-level=warning && node node_modules/.tmp/i18n.mjs"
+    "prueba": "npm run prueba:i18n && npm run prueba:cartas && npm run prueba:motor",
+    "prueba:i18n": "esbuild pruebas/i18n.ts --bundle --platform=node --outfile=node_modules/.tmp/i18n.mjs --log-level=warning && node node_modules/.tmp/i18n.mjs",
+    "prueba:cartas": "esbuild pruebas/cartas.ts --bundle --platform=node --outfile=node_modules/.tmp/cartas.mjs --log-level=warning && node node_modules/.tmp/cartas.mjs",
+    "prueba:motor": "esbuild pruebas/motor.ts --bundle --platform=node --outfile=node_modules/.tmp/motor.mjs --log-level=warning && node node_modules/.tmp/motor.mjs"
   },
   "devDependencies": {
     "typescript": "^5.9.0",
