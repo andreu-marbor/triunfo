@@ -5,6 +5,7 @@
 
 import type { Carta, Palo } from '../logica/cartas';
 import { t } from '../i18n';
+import { figuraSvg } from './figuras';
 
 /* Glifos de palo en una caja de 24×24, pintados con currentColor:
    oros = moneda, copas = cáliz, espadas = sable, bastos = porra. */
@@ -74,19 +75,9 @@ function pipas(carta: Carta): string {
     .join('');
 }
 
-/** Figuras (sota, caballo, rey): glifo grande + puntos (1, 2 o 3).
-    Fase 9.5: el glifo llena el campo (panel interior completo, como en
-    las barajas clásicas — el índice de esquina queda encima). */
-function figura(carta: Carta): string {
-  const puntos = carta.rango - 9; // 10→1, 11→2, 12→3
-  let puntosSvg = '';
-  for (let i = 0; i < puntos; i++) {
-    puntosSvg += `<circle cx="${38 - (puntos - 1) * 5 + i * 10}" cy="88" r="2.1" class="carta-glifo"/>`;
-  }
-  return `${glifoEn(carta.palo, 38, 49, 2.5)}${puntosSvg}`;
-}
-
-/** Cara completa de la carta (SVG, viewBox 76×108). */
+/** Figuras (sota, caballo, rey): busto ilustrado de ui/figuras.ts
+    (Fase 9.5, Paso 2 — sin puntos: el índice de esquina distingue el
+    rango y la silueta de la cabeza lo refuerza). */
 function caraSvg(carta: Carta): string {
   const esFigura = carta.rango >= 10;
   const esquina = `
@@ -104,7 +95,7 @@ function caraSvg(carta: Carta): string {
       <rect x="4.5" y="4.5" width="67" height="99" rx="5" class="carta-filete"/>
       ${panel}
       ${esquina}
-      ${esFigura ? figura(carta) : pipas(carta)}
+      ${esFigura ? figuraSvg(carta.palo, carta.rango) : pipas(carta)}
       <g transform="rotate(180 38 54)">${esquina}</g>
     </svg>`;
 }

@@ -85,7 +85,7 @@ triunfo/
 │   ├── logica/              # cartas · motor (reglas Klondike) · solver · reparto · diaria · estadisticas
 │   ├── almacenamiento/      # estadisticas.ts (localStorage con saneado defensivo)
 │   ├── i18n/                # index.ts + es.json · ca.json · en.json
-│   ├── ui/                  # menu · mesa · carta · hud · lang · estadisticas
+│   ├── ui/                  # menu · mesa · carta · figuras · hud · lang · estadisticas
 │   └── styles/              # base.css (variables, tapete) · cartas.css · app.css
 ├── public/                  # manifest, sw.js, icons (SVG)
 ├── twa-manifest.json · manifest-checksum.txt   # TWA (Fase 8; checksum = SHA-1 del manifiesto)

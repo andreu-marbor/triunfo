@@ -531,3 +531,39 @@ en el panel de figuras».
 **Verificación:** hoja regenerada (`npm.cmd run vista:cartas`, abre sola en el navegador),
 suite **378 ✓** y build ✓; en el HTML generado: 26 paneles + 26 glifos a `scale(2.5)` y los
 tres tamaños (5 + 40 + 40 cartas).
+
+---
+
+## 2026-10-17 — Fase 9.5 (Paso 2): figuras ilustradas — bustos de sota, caballo y rey
+
+**Qué:** nuevo `src/ui/figuras.ts` con **bustos geométricos planos** parametrizados por palo
+(PLAN §Fase 9.5 Paso 2, decisión §9.11). `ui/carta.ts` los usa vía `figuraSvg(palo, rango)` y
+se elimina la figura anterior (glifo grande + puntos 1-2-3 — **los puntos desaparecen**: el
+índice de esquina ya distingue el rango y la silueta de la cabeza lo refuerza).
+
+**Diseño (coords del viewBox 76×108):**
+
+- **Base común:** cuello + cabeza (`--piel`, trazo tinta) + ojos y boca mínimos.
+- **Silueta = rango:** rey → **corona de tres picos** con joyas del palo; caballo → **gorro
+  con penacho** que barre hacia la esquina superior; sota → **bonete bajo con pompa** del palo.
+- **Manto** del color cerámico del palo (clase `carta-glifo` + `currentColor`, así que hereda
+  las reglas `data-palo` sin duplicar nada), **dobladillo y botón en oro**, escote en V de
+  papel y joya-cuello dorada.
+- **Atributo por palo** siempre a la izquierda del busto, en primera línea: **moneda**
+  (oros), **cáliz** de tres piezas (copas), **sable** con cruz y pomo (espadas), **porra**
+  con banda (bastos). Todos con trazo tinta para separarse del manto cuando coinciden de
+  color (cáliz grana sobre manto grana, porra verde sobre manto verde…).
+- **Color 100 % vía variables CSS:** clases `fig-*` nuevas en `cartas.css` (`fig-manto`,
+  `fig-piel` — nuevo token `--piel: #eccfa8` en `base.css` —, `fig-oro`, `fig-papel`,
+  `fig-oscuro`, `fig-trazo`, `fig-linea`). Ningún valor de color en el TS (§9.9 intacto).
+
+**Trampas:** `tsc` detectó los parámetros `palo` sin uso en `bonete`/`penacho`/`corona` —
+en realidad **ninguna** coronera lo necesita (el color de las joyas llega por CSS), así que
+`CORONAS` quedó como `Record<number, () => string>`. En el HTML de la hoja de contactos se
+verificaron las 26 figuras (12+12 en las filas de 74/38 px + 2 a 300 px) con su manto y su
+atributo, y 0 puntos viejos.
+
+**Pruebas:** +5 en el grupo «Diseño de cartas» (manto, atributo, ausencia de puntos, números
+sin busto y que rey/sota/caballo se distinguen entre sí) → **63 en pantallas /
+383 en total**, suite y build en verde. La hoja de contactos se regeneró con las figuras
+nuevas para revisión del usuario.

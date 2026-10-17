@@ -44,6 +44,41 @@
   fill: var(--papel-hover); /* más claro que el papel: sube el contraste */
 }
 
+/* Figuras ilustradas (Fase 9.5, Paso 2): bustos planos parametrizados
+   (ui/figuras.ts). El manto y las joyas van con clase `carta-glifo` y
+   currentColor, así que heredan el color del palo (reglas de arriba). */
+.fig-manto {
+  fill: currentColor;
+}
+
+.fig-piel {
+  fill: var(--piel);
+}
+
+.fig-oro {
+  fill: var(--acento);
+}
+
+.fig-papel {
+  fill: var(--papel);
+}
+
+.fig-oscuro {
+  fill: var(--tinta);
+}
+
+.fig-trazo {
+  stroke: var(--tinta);
+  stroke-width: 0.9;
+}
+
+.fig-linea {
+  fill: none;
+  stroke: var(--tinta);
+  stroke-width: 0.8;
+  stroke-linecap: round;
+}
+
 .carta-numero {
   font-family: Georgia, 'Times New Roman', serif;
   font-size: 13px;

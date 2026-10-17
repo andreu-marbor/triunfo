@@ -113,6 +113,27 @@ const cartaRey = crearCarta({ id: 999, palo: 'copas', rango: 12, bocaAbajo: fals
 comprobar(cartaRey.querySelector('.carta-panel') !== null, 'las figuras llevan panel de campo');
 const cartaCinco = crearCarta({ id: 998, palo: 'oros', rango: 5, bocaAbajo: false });
 comprobar(cartaCinco.querySelector('.carta-panel') === null, 'los números no llevan panel');
+// Paso 2: figuras ilustradas (ui/figuras.ts)
+comprobar(
+  cartaRey.querySelector('.fig-manto') !== null,
+  'las figuras llevan manto del color del palo',
+);
+comprobar(
+  cartaRey.querySelector('.fig-objeto') !== null,
+  'las figuras llevan su atributo (moneda, cáliz, sable, porra)',
+);
+comprobar(
+  cartaRey.querySelectorAll('circle[r="2.1"]').length === 0,
+  'las figuras ya no llevan los puntos 1-2-3',
+);
+comprobar(cartaCinco.querySelector('.fig-manto') === null, 'los números no llevan busto');
+const cartaSota = crearCarta({ id: 997, palo: 'espadas', rango: 10, bocaAbajo: false });
+const cartaCaballo = crearCarta({ id: 996, palo: 'bastos', rango: 11, bocaAbajo: false });
+comprobar(
+  cartaRey.innerHTML !== cartaSota.innerHTML &&
+    cartaSota.innerHTML !== cartaCaballo.innerHTML,
+  'rey, sota y caballo se distinguen entre sí',
+);
 
 // --- 2. Voltear el mazo ---
 grupo('Voltear el mazo');
