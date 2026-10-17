@@ -19,7 +19,7 @@ grupo('Baraja española');
 const baraja = barajaEspanola();
 comprobar(baraja.length === 40, 'la baraja tiene 40 cartas');
 comprobar(new Set(baraja.map((c) => c.id)).size === 40, 'los ids son únicos (0–39)');
-comprobar(baraja.every((c) => !c.bocaAbijo), 'las 40 cartas nacen boca arriba');
+comprobar(baraja.every((c) => !c.bocaAbajo), 'las 40 cartas nacen boca arriba');
 for (const palo of PALOS) {
   const delPalo = baraja.filter((c) => c.palo === palo);
   comprobar(delPalo.length === 10, `${palo}: 10 cartas`);

@@ -37,6 +37,7 @@ import { aplicarIdiomaInicial, setLang } from '../src/i18n';
 import { mostrarMesa } from '../src/ui/mesa';
 import { mostrarMenu } from '../src/ui/menu';
 import { mostrarEstadisticas } from '../src/ui/estadisticas';
+import { crearCarta } from '../src/ui/carta';
 import { estadisticasVacias } from '../src/logica/estadisticas';
 import { sonidoActivado } from '../src/efectos';
 import { comprobar, finalizar, grupo } from './ayudante';
@@ -93,6 +94,25 @@ comprobar(
   'el contador de movimientos empieza en 0',
 );
 comprobar(raiz.querySelector('.victoria')?.hasAttribute('hidden') === true, 'la capa de victoria empieza oculta');
+
+// --- 1b. Diseño de las cartas (Fase 9.5, §9.11) ---
+grupo('Diseño de cartas (Fase 9.5)');
+comprobar(
+  raiz.querySelector('.zona-mazo .carta-dorso .dorso-medallon') !== null,
+  'el dorso lleva su medallón con la roseta de palos',
+);
+comprobar(
+  raiz.querySelector('.columna .carta:not(.boca-abajo) .carta-filete') !== null,
+  'la cara lleva filete interior',
+);
+comprobar(
+  raiz.querySelector('.columna .carta:not(.boca-abajo) .carta-glifo') !== null,
+  'las pipas van pintadas con el color del palo',
+);
+const cartaRey = crearCarta({ id: 999, palo: 'copas', rango: 12, bocaAbajo: false });
+comprobar(cartaRey.querySelector('.carta-panel') !== null, 'las figuras llevan panel de campo');
+const cartaCinco = crearCarta({ id: 998, palo: 'oros', rango: 5, bocaAbajo: false });
+comprobar(cartaCinco.querySelector('.carta-panel') === null, 'los números no llevan panel');
 
 // --- 2. Voltear el mazo ---
 grupo('Voltear el mazo');

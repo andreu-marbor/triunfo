@@ -97,6 +97,7 @@ const pares = [
   ['--acento', 'tapete (punto más claro)', 'anillo de foco y racha (texto grande)', 3],
   ['--papel', 'tapete (punto más claro)', 'píldora del triunfo en el HUD (límite)', 3],
   ['--oros', 'papel', 'pipas y glifo de oros (gráfico de contenido)', 3],
+  ['--oros', 'papel (hover)', 'figuras/oros sobre el panel claro del campo (Fase 9.5)', 3],
   ['--copas', 'papel', 'pipas y glifo de copas (gráfico de contenido)', 3],
   ['--espadas', 'papel', 'pipas y glifo de espadas (gráfico de contenido)', 3],
   ['--bastos', 'papel', 'pipas y glifo de bastos (gráfico de contenido)', 3],

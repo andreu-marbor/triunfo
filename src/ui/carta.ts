@@ -35,29 +35,30 @@ function glifoEn(palo: Palo, x: number, y: number, escala: number): string {
 }
 
 /* Repartos de pipas para los numéricos (x, y normalizados en la zona
-   central; el tamaño baja a medida que sube el número). */
+   central; el tamaño baja a medida que sube el número). Fase 9.5: pipas
+   +30 % y zona ensanchada — a 38 px de ancho ya no desaparecen. */
 const PIPAS: Record<number, { pos: [number, number][]; tam: number }> = {
-  1: { pos: [[0.5, 0.5]], tam: 15 },
-  2: { pos: [[0.5, 0.22], [0.5, 0.78]], tam: 10.5 },
-  3: { pos: [[0.5, 0.16], [0.5, 0.5], [0.5, 0.84]], tam: 10 },
-  4: { pos: [[0.27, 0.24], [0.73, 0.24], [0.27, 0.76], [0.73, 0.76]], tam: 9 },
-  5: { pos: [[0.27, 0.22], [0.73, 0.22], [0.5, 0.5], [0.27, 0.78], [0.73, 0.78]], tam: 8.5 },
+  1: { pos: [[0.5, 0.5]], tam: 18 },
+  2: { pos: [[0.5, 0.22], [0.5, 0.78]], tam: 13 },
+  3: { pos: [[0.5, 0.16], [0.5, 0.5], [0.5, 0.84]], tam: 12 },
+  4: { pos: [[0.27, 0.24], [0.73, 0.24], [0.27, 0.76], [0.73, 0.76]], tam: 11.5 },
+  5: { pos: [[0.27, 0.22], [0.73, 0.22], [0.5, 0.5], [0.27, 0.78], [0.73, 0.78]], tam: 11 },
   6: {
     pos: [
       [0.27, 0.18], [0.73, 0.18], [0.27, 0.5], [0.73, 0.5], [0.27, 0.82], [0.73, 0.82],
     ],
-    tam: 8.5,
+    tam: 10.5,
   },
   7: {
     pos: [
       [0.27, 0.16], [0.73, 0.16], [0.5, 0.35], [0.27, 0.52], [0.73, 0.52],
       [0.27, 0.84], [0.73, 0.84],
     ],
-    tam: 8,
+    tam: 10,
   },
 };
 
-const ZONA = { x: 38, y: 54, ancho: 46, alto: 66 }; // caja central de pipas
+const ZONA = { x: 38, y: 54, ancho: 52, alto: 74 }; // caja central de pipas
 
 function pipas(carta: Carta): string {
   const reparto = PIPAS[carta.rango];
@@ -73,25 +74,34 @@ function pipas(carta: Carta): string {
     .join('');
 }
 
-/** Figuras (sota, caballo, rey): glifo grande + puntos (1, 2 o 3). */
+/** Figuras (sota, caballo, rey): glifo grande + puntos (1, 2 o 3).
+    Fase 9.5: el glifo crece y respira dentro del panel del campo. */
 function figura(carta: Carta): string {
   const puntos = carta.rango - 9; // 10→1, 11→2, 12→3
   let puntosSvg = '';
   for (let i = 0; i < puntos; i++) {
     puntosSvg += `<circle cx="${38 - (puntos - 1) * 5 + i * 10}" cy="88" r="2.1" class="carta-glifo"/>`;
   }
-  return `${glifoEn(carta.palo, 38, 46, 2.1)}${puntosSvg}`;
+  return `${glifoEn(carta.palo, 38, 50, 2.3)}${puntosSvg}`;
 }
 
 /** Cara completa de la carta (SVG, viewBox 76×108). */
 function caraSvg(carta: Carta): string {
   const esFigura = carta.rango >= 10;
   const esquina = `
-    <text x="7" y="17" class="carta-numero">${carta.rango}</text>
-    ${glifoEn(carta.palo, 11.5, 27, 0.52)}`;
+    <text x="7" y="16" class="carta-numero">${carta.rango}</text>
+    ${glifoEn(carta.palo, 11.5, 25.5, 0.5)}`;
+  // Panel del campo de figuras (Fase 9.5): más claro que el papel, las
+  // figuras ganan escenario y su contraste MEJORA (ver el par «pipas
+  // sobre el panel» en comprobar-contraste).
+  const panel = esFigura
+    ? '<rect x="23" y="19" width="30" height="74" rx="4" class="carta-panel"/>'
+    : '';
   return `
     <svg class="carta-cara" viewBox="0 0 76 108" aria-hidden="true" focusable="false">
       <rect x="1" y="1" width="74" height="106" rx="8" class="carta-borde"/>
+      <rect x="4.5" y="4.5" width="67" height="99" rx="5" class="carta-filete"/>
+      ${panel}
       ${esquina}
       ${esFigura ? figura(carta) : pipas(carta)}
       <g transform="rotate(180 38 54)">${esquina}</g>
@@ -112,7 +122,19 @@ export function crearCarta(carta: Carta): HTMLDivElement {
   if (carta.bocaAbajo) {
     el.classList.add('boca-abajo');
     el.setAttribute('aria-hidden', 'true');
-    el.innerHTML = '<div class="carta-dorso"></div>';
+    // Dorso con medallón (Fase 9.5): roseta de los 4 palos en oro
+    // (currentColor) entre doble anillo, sobre el tapete oscuro.
+    el.innerHTML = `
+      <div class="carta-dorso">
+        <svg class="dorso-medallon" viewBox="0 0 76 108" aria-hidden="true" focusable="false">
+          <circle cx="38" cy="54" r="18" class="dorso-anillo"/>
+          <circle cx="38" cy="54" r="14.5" class="dorso-anillo-fino"/>
+          ${glifoEn('oros', 38, 45.5, 0.36)}
+          ${glifoEn('copas', 46.5, 54, 0.36)}
+          ${glifoEn('espadas', 38, 62.5, 0.36)}
+          ${glifoEn('bastos', 29.5, 54, 0.36)}
+        </svg>
+      </div>`;
   } else {
     el.dataset.palo = carta.palo;
     el.setAttribute('aria-label', nombreCarta(carta));

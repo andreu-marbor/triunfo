@@ -73,7 +73,8 @@ triunfo/
 ├── scripts/
 │   ├── generar-iconos.mjs   # iconos PWA con sharp
 │   ├── auditoria-solver.ts  # dificultad del solver en 1000 semillas (`npm run auditoria`)
-│   └── comprobar-*.mjs      # contraste AA · móvil 320px · PWA/offline (Chrome + CDP)
+│   ├── comprobar-*.mjs      # contraste AA · móvil 320px · PWA/offline (Chrome + CDP)
+│   └── vista-cartas.ts      # hoja de contactos visual de las cartas (`npm run vista:cartas`)
 ├── pruebas/                 # esbuild + Node (ayudante propio, sin frameworks)
 │   ├── ayudante.ts          # mini-ayudante de aserciones
 │   ├── i18n.ts · cartas.ts · motor.ts · solver.ts · reparto.ts · diaria.ts · estadisticas.ts
@@ -139,6 +140,7 @@ npm.cmd run auditoria  # dificultad del solver en 1000 semillas (~7 min; umbral 
 npm.cmd run comprobar:contraste  # contraste AA (también dentro de `prueba`)
 npm.cmd run comprobar:movil      # reflow 320px + táctiles (requiere build + Chrome)
 npm.cmd run comprobar:offline    # PWA: SW, caché y manifiesto (requiere build + Chrome)
+npm.cmd run vista:cartas         # hoja de contactos de las cartas (Fase 9.5; abre el navegador)
 ```
 
 ### Git / despliegue

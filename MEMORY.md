@@ -466,3 +466,41 @@ del router (53 comprobaciones en pantallas).
 accesibilidad (contraste/móvil/offline) ✅ · i18n revisada ✅. Suite: **372 comprobaciones**
 (15 contraste + 87 i18n + 30 cartas + 72 motor + 32 solver + 15 reparto + 28 diaria +
 40 estadísticas + 53 pantallas) y build en verde.
+
+---
+
+## 2026-10-17 — Fase 9.5 (Paso 1): cartas refinadas — filete, pipas mayores, panel y dorso con medallón
+
+**Qué:** el usuario rechazó el diseño inicial de las cartas (todo el detalle en PLAN §Fase 9.5 y
+decisión §9.11). Plan anotado en PLAN.md en dos pasos — **Paso 1 (hecho): refinamiento
+simbólico**; **Paso 2 (pendiente de feedback): figuras ilustradas** de rey/caballo/sota.
+
+**Cara (`src/ui/carta.ts` + `styles/cartas.css`):**
+
+- **Filete interior** clásico: segundo rect redondeado (inset 4,5, stroke `--papel-borde`) en
+  todas las caras — el doble borde de toda baraja de verdad.
+- **Pipas +30 %** (`tam` 8–15 → 10–18) y **zona central ensanchada** (46×66 → 52×74), con el
+  reparto del 7 reequilibrado; a 38 px de ancho las pipas ya no desaparecen.
+- **Panel claro tras el campo de figuras** (`--papel-hover`, rect 30×74): las figuras ganan
+  escenario y el contraste de sus colores **mejora** (fondo más claro que el papel); se añadió
+  el par «oros sobre papel (hover) ≥3» al comprobador de contraste.
+- Índice de esquina ligeramente agrupado (número + pipo más pegados).
+
+**Dorso nuevo (medallón):** tapete oscuro con veta fina (repeating-gradient al 5 %), doble
+filete papel+oro, y **medallón central con la roseta de los 4 palos en oro** (doble anillo +
+4 glifos SVG inline, `currentColor` = `--acento`). Sigue sin haber ni un PNG (§9.9).
+
+**Herramienta nueva — `npm.cmd run vista:cartas`:** genera `node_modules/.tmp/vista-cartas.html`
+y lo abre en el navegador: hoja de contactos con detalle a 300 px + las 40 caras a 74 px y a
+38 px (tamaño real móvil), renderizadas con los **módulos reales** de la app vía jsdom (nada de
+SVG duplicado). Trampas resueltas: el bundle necesita `--packages=external` (igual que
+`prueba:pantallas`) y `process.cwd()` como raíz (el bundle vive en `node_modules/.tmp`).
+
+**Pruebas:** 5 nuevas comprobaciones en `pruebas/pantallas.ts` (grupo «Diseño de cartas»:
+medallón del dorso, filete de la cara, pipas con color de palo, panel en figuras y su ausencia
+en números) y arreglo del typo latente `bocaAbijo` → `bocaAbajo` en `pruebas/cartas.ts` (la
+aserción «nacen boca arriba» comprobaba una propiedad inexistente y pasaba siempre).
+
+**Estado:** suite **378 comprobaciones** (16 contraste + 87 i18n + 30 cartas + 72 motor +
+32 solver + 15 reparto + 28 diaria + 40 estadísticas + 58 pantallas) y build en verde.
+**Siguiente:** feedback del usuario con la hoja de contactos → Paso 2 (figuras ilustradas).

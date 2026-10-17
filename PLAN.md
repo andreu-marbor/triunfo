@@ -100,6 +100,25 @@ auditada en MEMORY (tasa de rechazo de repartos), i18n revisada, accesibilidad (
 objetivos táctiles ≥ 44px, reflow 320px — scripts de `quiz-historia` como referencia), Fase 10
 posible: más variantes (voltear 3, FreeCell) si hay demanda.
 
+### Fase 9.5 — Rediseño de cartas (petición del usuario, 2026-10-17; §9.11)
+El diseño inicial no convenció (figuras = glifo grande + puntos, pipas pequeñas, cara plana,
+dorso simple). Dos pasos con verificación visual entre ellos mediante **`npm.cmd run
+vista:cartas`** (hoja de contactos con las 40 caras + dorso a 74 px y a 38 px, generada con los
+módulos reales de la app):
+
+- **Paso 1 — refinamiento simbólico (cara + dorso):** filete interior clásico, pipas +30 % con
+  la zona central reequilibrada, índice de esquina agrupado, **panel claro tras el campo de
+  figuras** (`--papel-hover`, que además *mejora* el contraste de las pipas) y **dorso con
+  medallón**: roseta de los 4 palos en oro sobre `--tapete-oscuro`, doble filete papel+acento.
+- **Paso 2 — figuras ilustradas:** nuevo `src/ui/figuras.ts` con bustos geométricos planos de
+  rey/caballo/sota parametrizados por palo (corona/penacho/bonete en acento, manto del color
+  del palo, atributo por palo: espada, cáliz, moneda, porra). Se eliminan los puntos 1-2-3
+  (el índice de esquina ya distingue el rango).
+
+Salvaguardas comunes: legibilidad validada a 38 px (móvil estrecho), pares nuevos en
+`comprobar:contraste` si nace un fondo, `pruebas/cartas.ts` adaptada en el mismo paso,
+100 % SVG inline sin assets (§9.9) y colores solo vía variables CSS.
+
 ## 5. Riesgos y mitigaciones
 
 | Riesgo | Mitigación |
@@ -165,7 +184,15 @@ personalización de tapetes, compras.
   la tasa de rechazo (umbral §5: 60 %), forzando re-tunar la heurística; (c) encaja mejor con el
   posicionamiento "sin mala suerte" y con el público casual móvil. "Voltear 3" queda como
   variante futura opcional (Fase 10), con verificación del solver propia si se implementa.
+- **§9.11 Rediseño de cartas (2026-10-17):** el usuario rechazó el diseño inicial de las caras
+  (las figuras eran un glifo grande con puntos, pipas pequeñas, cara plana, dorso simple).
+  Dirección elegida: **primero B — refinamiento simbólico (filete, pipas mayores, panel de
+  figuras, dorso con medallón) — y después A — figuras ilustradas de rey/caballo/sota** —, en
+  dos pasos con hoja de contactos visual (`vista:cartas`) de por medio. Se mantiene el §9.9 sin
+  cambios: 100 % SVG inline, cero assets de imagen.
 
 ## 10. Estado
+
+Ver [MEMORY.md](./MEMORY.md) — el estado vivo de las fases está ahí, no aquí.
 
 Ver [MEMORY.md](./MEMORY.md) — el estado vivo de las fases está ahí, no aquí.
