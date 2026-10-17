@@ -19,7 +19,9 @@ regla, bien hecha**; más variantes serían una fase futura si hay acogida.
 ## 2. Decisiones de alcance cerradas
 
 - **Una regla:** Klondike clásico (7 montones, mazo + descarte, 4 fundaciones) con los matices
-  de §9.2/§9.3. Sin "sin voltear 3" alternativo en v1 (fase 9 si acaba).
+  de §9.2/§9.3 y **voltear 1 carta** por jugada (§9.10; el motor voltea 1 desde la Fase 2 y
+  sobre esa regla están construidos y auditados el solver y la garantía). La variante
+  "voltear 3" queda **fuera de v1** (posible Fase 10).
 - **Toda partida del modo normal y diario pasa por el solver** (garantía de victoria).
 - Modos: **Día** (reparto del día + racha) · **Libre** (repartos infinitos ganables) ·
   **Clásico** (reparto aleatorio sin garantía, para nostálgicos; oculto en un ajuste).
@@ -93,10 +95,10 @@ Bubblewrap (`com.andreumarbor.triunfo`), `assetlinks.json` en el sitio personal,
 Mismas trampas de máquina que `quiz-historia` (JDK 17 x64, `local.properties`).
 
 ### Fase 9 — Pulido
-Animación de triunfo al ganar (§momento estrella), variante "voltear 1", dificultad del solver
+Animación de triunfo al ganar (§momento estrella), dificultad del solver
 auditada en MEMORY (tasa de rechazo de repartos), i18n revisada, accesibilidad (contraste AA,
 objetivos táctiles ≥ 44px, reflow 320px — scripts de `quiz-historia` como referencia), Fase 10
-posible: más variantes (FreeCell) si hay demanda.
+posible: más variantes (voltear 3, FreeCell) si hay demanda.
 
 ## 5. Riesgos y mitigaciones
 
@@ -155,6 +157,14 @@ personalización de tapetes, compras.
   `localStorage` (patrón de `trencadis` y del progreso de `quiz-historia`).
 - **§9.9 Cartas 100 % vectoriales** (SVG inline paramétrico por rango/palo): 0 assets de imagen,
   escalable, themable, y demostración de pulido CSS (revisadores de frontend lo notan).
+- **§9.10 Voltear 1 carta (corrección de plan, 2026-10-17):** el motor **voltea 1 carta** por
+  jugada desde la Fase 2; el PLAN de Fase 1 anticipaba "voltear 3" como default con "voltear 1"
+  como variante de la Fase 9 — **se corrige el PLAN, no el motor**. Motivos: (a) la garantía de
+  ganabilidad, el solver y su auditoría (1000 semillas, Fase 9: 38,9 % de rechazo, 0 agotes)
+  están construidos y verificados bajo esa regla; (b) voltear 3 endurecería el juego y dispararía
+  la tasa de rechazo (umbral §5: 60 %), forzando re-tunar la heurística; (c) encaja mejor con el
+  posicionamiento "sin mala suerte" y con el público casual móvil. "Voltear 3" queda como
+  variante futura opcional (Fase 10), con verificación del solver propia si se implementa.
 
 ## 10. Estado
 

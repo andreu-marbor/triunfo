@@ -29,7 +29,7 @@
 }
 
 .boton.primario:hover {
-  background: #fffaf0;
+  background: var(--papel-hover);
 }
 
 .boton.grande {
@@ -68,7 +68,11 @@
 
 .hud-triunfo {
   margin-left: auto;
-  border: 1px solid currentColor;
+  /* Sello de papel: texto tinta (los colores de palo como texto daban
+     1,1–1,9:1 sobre el tapete; ahora solo tiñen el borde, decorativo). */
+  background: var(--papel);
+  color: var(--tinta);
+  border: 2px solid var(--palo, var(--acento));
   border-radius: 999px;
   padding: 0.3rem 0.8rem;
   font-weight: 600;
@@ -76,16 +80,16 @@
 }
 
 .hud-triunfo[data-palo='oros'] {
-  color: var(--oros);
+  --palo: var(--oros);
 }
 .hud-triunfo[data-palo='copas'] {
-  color: var(--copas);
+  --palo: var(--copas);
 }
 .hud-triunfo[data-palo='espadas'] {
-  color: var(--espadas);
+  --palo: var(--espadas);
 }
 .hud-triunfo[data-palo='bastos'] {
-  color: var(--bastos);
+  --palo: var(--bastos);
 }
 
 .fila-superior {
@@ -145,10 +149,26 @@
   display: grid;
   place-items: center;
   padding: 1rem;
+  /* Momento estrella (Fase 9): el velo espera a que termine el volteo de
+     triunfo (4 × escalonado 300 ms + 620 ms = 1550 ms; ver DURACION_
+     CELEBRACION en ui/mesa.ts). Mientras tanto está transparente y no
+     captura clics (los botones aún no existen para el dedo). */
+  animation: velo-victoria 450ms ease 1550ms both;
 }
 
 .victoria[hidden] {
   display: none;
+}
+
+@keyframes velo-victoria {
+  from {
+    opacity: 0;
+    pointer-events: none;
+  }
+  to {
+    opacity: 1;
+    pointer-events: auto;
+  }
 }
 
 .victoria-tarjeta {
@@ -169,7 +189,7 @@
 
 .victoria-detalle {
   margin: 0;
-  color: #6b6152;
+  color: var(--tinta-tenue);
 }
 
 .victoria-botones {
@@ -184,6 +204,102 @@
   color: var(--tinta);
   border-color: var(--papel-borde);
   background: transparent;
+}
+
+/* --- Momento estrella (Fase 9): volteo de triunfo al ganar --- */
+
+.fundacion {
+  perspective: 700px; /* el volteo 3D de la carta de cima */
+}
+
+.volteo-triunfo {
+  animation: volteo-triunfo 620ms ease-in-out both;
+  animation-delay: calc(var(--orden, 0) * 300ms);
+}
+
+@keyframes volteo-triunfo {
+  0% {
+    transform: rotateY(0deg);
+    box-shadow: 0 2px 6px rgb(0 0 0 / 0.35);
+  }
+  35%,
+  65% {
+    transform: rotateY(90deg); /* de canto: asoma el sello (hermano) */
+  }
+  100% {
+    /* queda el halo del palo de triunfo grabado en la carta */
+    transform: rotateY(0deg);
+    box-shadow:
+      0 0 0 3px var(--halo, var(--acento)),
+      0 0 16px 3px var(--halo, var(--acento));
+  }
+}
+
+/* Sello del palo de triunfo: flota sobre la fundación mientras la carta
+   está de canto y se desvanece dejándole el halo a la carta. */
+.hueco.sello-triunfo {
+  border: none;
+  background: transparent;
+  z-index: 3;
+  opacity: 0;
+  pointer-events: none;
+  animation: sello-triunfo 620ms ease-in-out both;
+  animation-delay: calc(var(--orden, 0) * 300ms + 170ms);
+}
+
+.hueco.sello-triunfo svg {
+  opacity: 1;
+  width: 56%;
+  height: 56%;
+  color: var(--halo, var(--acento));
+}
+
+@keyframes sello-triunfo {
+  0%,
+  25% {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+  55% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+  75% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.25);
+  }
+}
+
+/* El HUD celebra el triunfo con un pulso en su sello */
+.hud-triunfo.celebra {
+  animation: pulso-triunfo 900ms ease-in-out 3;
+}
+
+@keyframes pulso-triunfo {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 transparent;
+  }
+  50% {
+    transform: scale(1.12);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--palo, var(--acento)) 45%, transparent);
+  }
+}
+
+/* Sin animaciones si el sistema pide movimiento reducido: el velo entra
+   ya (sin retardo) y los volteos ni se aplican (guarda extra en JS). */
+@media (prefers-reduced-motion: reduce) {
+  .victoria,
+  .volteo-triunfo,
+  .hueco.sello-triunfo,
+  .hud-triunfo.celebra {
+    animation: none;
+  }
 }
 
 /* --- Menú: acciones y racha (Fase 5) --- */
@@ -204,7 +320,10 @@
 
 .racha {
   margin: 0.2rem 0 0;
-  font-weight: 600;
+  /* Texto grande en negrita (≥18,7px): con el dorado del acento cumple
+     AA por el umbral de 3:1 (WCAG 1.4.3). */
+  font-size: 1.18rem;
+  font-weight: 700;
   color: var(--acento);
 }
 
@@ -216,7 +335,7 @@
   height: 1.4rem;
   border-radius: 999px;
   background: var(--acento);
-  color: var(--papel);
+  color: var(--tinta); /* ✓ tinta sobre dorado ≈10:1 (con papel daba 1,5:1) */
   font-size: 0.9rem;
   line-height: 1;
 }

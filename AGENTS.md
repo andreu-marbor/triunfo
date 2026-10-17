@@ -71,7 +71,9 @@ triunfo/
 ├── index.html · package.json · tsconfig.json · vite.config.ts   # base: './'
 ├── .github/workflows/       # ci.yml (pruebas+build) · despliegue.yml (Pages, Fase 7)
 ├── scripts/
-│   └── generar-iconos.mjs   # iconos PWA con sharp
+│   ├── generar-iconos.mjs   # iconos PWA con sharp
+│   ├── auditoria-solver.ts  # dificultad del solver en 1000 semillas (`npm run auditoria`)
+│   └── comprobar-*.mjs      # contraste AA · móvil 320px · PWA/offline (Chrome + CDP)
 ├── pruebas/                 # esbuild + Node (ayudante propio, sin frameworks)
 │   ├── ayudante.ts          # mini-ayudante de aserciones
 │   ├── i18n.ts · cartas.ts · motor.ts · solver.ts · reparto.ts · diaria.ts · estadisticas.ts
@@ -82,7 +84,7 @@ triunfo/
 │   ├── logica/              # cartas · motor (reglas Klondike) · solver · reparto · diaria · estadisticas
 │   ├── almacenamiento/      # estadisticas.ts (localStorage con saneado defensivo)
 │   ├── i18n/                # index.ts + es.json · ca.json · en.json
-│   ├── ui/                  # menu · mesa · carta · hud · resultado · lang · estadisticas
+│   ├── ui/                  # menu · mesa · carta · hud · lang · estadisticas
 │   └── styles/              # base.css (variables, tapete) · cartas.css · app.css
 ├── public/                  # manifest, sw.js, icons (SVG)
 ├── twa-manifest.json · manifest-checksum.txt   # TWA (Fase 8; checksum = SHA-1 del manifiesto)
@@ -133,6 +135,10 @@ npm.cmd run build      # producción (tsc --noEmit + vite)
 npm.cmd run preview    # previsualizar build
 npm.cmd run prueba     # lógica + solver + pantallas (todo verde antes de commit)
 npm.cmd run iconos     # regenerar iconos PNG desde SVG
+npm.cmd run auditoria  # dificultad del solver en 1000 semillas (~7 min; umbral §5)
+npm.cmd run comprobar:contraste  # contraste AA (también dentro de `prueba`)
+npm.cmd run comprobar:movil      # reflow 320px + táctiles (requiere build + Chrome)
+npm.cmd run comprobar:offline    # PWA: SW, caché y manifiesto (requiere build + Chrome)
 ```
 
 ### Git / despliegue

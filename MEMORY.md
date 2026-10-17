@@ -372,3 +372,97 @@ mesa en móvil — jsdom no calcula layout ni dispara gestos reales.
 **Pendiente inmediato (próxima sesión):** Fase 9 — Pulido: animación de triunfo al ganar (momento estrella, efecto `triunfo` ya reservado), medir **Lighthouse PWA ≥ 90** y modo avión sobre la URL publicada, auditoría de 1000 semillas (tasa de rechazo del solver). Subida a **Play Store** (consola, cuenta de desarrollador) queda fuera del alcance automático: el AAB está listo en `Downloads\Triunfo-1.0.aab`.
 
 **Revisar en dispositivo real:** la TWA sin barra de URL (depende de que Google sirva ya el `assetlinks.json` nuevo — caché de hasta ~1 h en su API), el icono en el launcher y el splash con los colores del tapete.
+
+---
+
+## 2026-10-17 — Fase 9: auditoría del solver (1000 semillas) y corrección del §9.10
+
+**Qué:** auditoría de dificultad del solver (PLAN §5, criterio de la Fase 9) en verde y
+discrepancia PLAN↔motor sobre el volteo del mazo resuelta **corrigiendo el plan, no el motor**.
+
+**Auditoría (nuevo comando `npm.cmd run auditoria`, `scripts/auditoria-solver.ts`):**
+
+- 1000 semillas deterministas (producto impar × 2³²), reproduciendo la cadena de intentos real
+  de `repartoGanable` (tope 10, presupuesto 50 000 nodos): **1637 repartos evaluados**.
+- **Tasa de rechazo: 38,9 %** (637 descartados) — dentro del umbral del §5 (≤ 60 %).
+- **60,2 %** de semillas resueltas al **primer intento**; **0 agotes** de los 10 intentos → la
+  garantía de ganabilidad no falló en ni una de las 1000 semillas.
+- Tiempos: por reparto media 248 ms (p50 22 · p95 666 · máx 801); **por partida entregada
+  media 406 ms** (p95 1568 · máx 4496) — coherente con la línea base de la Fase 3 (~410 ms).
+- Nodos: media 20 303 · máx 50 000 (al tope: presupuesto agotado en algún intento, pero la
+  cadena siempre encontró reparto antes de los 10). Duración total: 406 s.
+- El script **falla (exit 1)** si rechazo > 60 % o si alguna semilla agota los intentos.
+
+**Incidencia detectada y resuelta (decisión §9.10):** el PLAN de Fase 1 decía que v1 juega con
+**«voltear 3»** y que «voltear 1» sería la variante de la Fase 9, pero **el motor voltea 1 carta
+desde la Fase 2** (y pruebas, solver y auditoría están construidos sobre esa regla). Resolución:
+**se corrige el PLAN** (§2, Fase 9 y nueva decisión §9.10), no el motor — voltear 3 subiría la
+tasa de rechazo (riesgo §5), re-tunaría la heurística y contradiría el posicionamiento "sin
+mala suerte" para público casual móvil. "Voltear 3" queda como variante futura opcional (Fase 10).
+
+**Hecho también:** `package.json` con script `auditoria` (esbuild + Node, patrón de las pruebas).
+
+---
+
+## 2026-10-17 — Fase 9: accesibilidad AA, PWA verificada, revisión i18n y un bug congelado
+
+**Qué:** el bloque de pulido de la Fase 9 (accesibilidad, reflow, objetivos táctiles, criterio
+PWA offline pendiente de la Fase 7 y revisión i18n). Tres comprobadores nuevos + varios arreglos
+reales que destaparon.
+
+**Comprobadores nuevos (`scripts/comprobar-*.mjs`, patrón de `quiz-historia`: Chrome headless +
+CDP vía WebSocket, vite preview lanzado con node directo — el spawn de `.cmd` está bloqueado en
+Windows sin shell):**
+
+- **`comprobar:contraste`** (15 pares, verde): lee la paleta de `base.css` y verifica WCAG 2.1
+  AA — 4,5:1 en texto sobre el **peor caso del degradado** (`--tapete-claro`, con los fondos
+  translúcidos compuestos encima) y 3:1 en gráficos de contenido (pipas de los 4 palos),
+  anillo de foco y píldora del HUD. **Entra en `npm run prueba`** (rápido, sin navegador).
+  Exclusiones documentadas en la cabecera del script (glifos fantasma de huecos, borde dorado
+  del diálogo de victoria, emoji del botón de sonido).
+- **`comprobar:movil`** (3 pantallas, verde): reflow a 320×720 (menú, estadísticas y **mesa con
+  partida real** — el script juega el rol del router: menú → stats → volver → libre) y
+  objetivos táctiles: ≥24px (WCAG 2.5.8) en todo, ≥44px (PLAN) en controles `<button>/<a>/…`
+  visibles (los de la capa de victoria oculta no cuentan).
+- **`comprobar:offline`** (12 comprobaciones, verde): sustituye al criterio «Lighthouse PWA ≥90»
+  — **Lighthouse 12 retiró la categoría PWA**, así que se verifica programáticamente: SW
+  controlando la página, **recarga** tras el claim (la primera visita va sin control y solo la
+  recarga cachea el bundle en runtime), carcasa precacheada («/», manifiesto, favicon) y
+  manifiesto instalable completo (name, standalone, start_url/scope, iconos 192/512 + maskable).
+
+**Paleta corregida (tokens en `base.css`, contraste AA):**
+
+- `--oros` #c8912f → **#b07d1f**: el dorado claro daba 2,49:1 sobre el papel de la carta y las
+  pipas son gráficos de contenido (1.4.11); ahora 3,24:1. `--acento` #e6bb5c → **#eac665**
+  (anillo de foco sobre el punto más claro del tapete: 2,97 → 3,26:1). `--texto-tenue` #cfe0d4
+  → **#e6f1e8** (ayudas sobre tapete claro: 3,89 → 4,62:1). Nuevos tokens `--tinta-tenue` y
+  `--papel-hover` (antes literales en `app.css`).
+- **HUD del triunfo rediseñado:** los colores de palo como texto daban **1,1–1,9:1 sobre el
+  tapete** (el pill «Triunfo de copas» en grana sobre verde era casi invisible); ahora es una
+  píldora de papel con texto tinta (14,9:1) y el color del palo tiñe solo el borde (decorativo).
+- `✓` del sello «hecho» a tinta sobre dorado (1,5 → 10,1:1); `.racha` a texto grande en negrita
+  (≥18,7px → umbral 3:1 con el acento, legítimo por 1.4.3).
+- `index.html`: fuera `user-scalable=no` (WCAG 1.4.4 — Lighthouse/axe lo marcan como crítico);
+  en su lugar `touch-action: manipulation` en `body` (sin zoom por doble toque sobre cartas,
+  con pellizco disponible).
+
+**🐞 Bug real encontrado y corregido (lo destapó `comprobar:movil`):** `ui/estadisticas.ts`
+devolvía `onVolver` como «limpieza»; el router la guarda como `limpiarActual`, así que **pulsar
+«Volver» en Estadísticas era irAMenu → limpiarActual() (= irAMenu) → … : recursión infinita** que
+congelaba la app en Estadísticas (RangeError silencioso). Arreglado: la limpieza ahora solo
+desengancha el listener. Prueba de regresión en `pruebas/pantallas.ts` que replica el patrón
+del router (53 comprobaciones en pantallas).
+
+**Revisión i18n (tres hallazgos):**
+
+- **Clave muerta `menu.play` eliminada** de `es/ca/en` (nobody la usaba; el test de claves
+  críticas la apuntaba — cambiada por `menu.free` y el umbral de «claves razonables» a ≥40).
+- **ca `game.victory`: «¡Has guanyat!» → «Has guanyat!»** — la ortografía valenciana/catalana
+  no usa signo de admiración invertido. Anclado con aserción en `pruebas/i18n.ts`.
+- **Singular de racha:** con racha = 1 la pantalla de estadísticas decía «1 días seguidos»;
+  ahora `rachaLegible` usa `stats.streakDay` («1 día seguido»). Prueba de regresión en pantallas.
+
+**Estado Fase 9 al cierre de este bloque:** auditoría del solver ✅ · animación de triunfo ✅ ·
+accesibilidad (contraste/móvil/offline) ✅ · i18n revisada ✅. Suite: **372 comprobaciones**
+(15 contraste + 87 i18n + 30 cartas + 72 motor + 32 solver + 15 reparto + 28 diaria +
+40 estadísticas + 53 pantallas) y build en verde.

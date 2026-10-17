@@ -14,7 +14,7 @@ import {
   type Origen,
 } from '../logica/motor';
 import { t } from '../i18n';
-import { reproducir, vibrar } from '../efectos';
+import { prefiereMovimientoReducido, reproducir, vibrar } from '../efectos';
 import { crearCarta, crearHueco } from './carta';
 import { crearHud } from './hud';
 
@@ -35,6 +35,11 @@ const UMBRAL_ARRASTRE = 6; // px: por debajo se interpreta como toque
 const PASO_BAJO = 0.14; // solapamiento de cartas boca abajo (× alto carta)
 const PASO_ALTO = 0.26; // …y de las boca arriba
 
+/* Duración del momento estrella (Fase 9): 4 volteos escalonados (3 × 300 ms)
+   + 620 ms del último. Debe coincidir con el retardo del velo de victoria
+   en `styles/app.css` (`.victoria { animation-delay: 1550ms }`). */
+const DURACION_CELEBRACION = 1550;
+
 export function mostrarMesa(
   raiz: HTMLElement,
   estado: Estado,
@@ -48,6 +53,7 @@ export function mostrarMesa(
   let arrastrando = false;
   let arrastreReciente = false;
   let fantasma: HTMLElement | null = null;
+  let timerVictoria: number | null = null; // fanfarria al entrar la capa
 
   // --- Esqueleto (una sola vez) ---
   raiz.innerHTML = `
@@ -178,7 +184,33 @@ export function mostrarMesa(
       return;
     }
     detalle.textContent = t('game.victoryMoves', { n: actual.movimientos });
+    // Se desoculta YA: el retardo del velo vive en CSS (`.victoria`), para
+    // que la capa esté visible para quien la compruebe aunque su entrada
+    // espere al final del volteo de triunfo.
     capa.hidden = false;
+  }
+
+  /** Momento estrella (PLAN §4, Fase 9): al ganar, cada carta de fundación
+      se "da la vuelta" una a una y mientras está de canto asoma el sello
+      del palo de triunfo; el sello queda grabado con un halo de color y el
+      HUD pulsa. Con movimiento reducido no hay volteo (el velo entra solo). */
+  function celebrarTriunfo(): void {
+    if (prefiereMovimientoReducido()) return;
+    const halo = `var(--${actual.triunfo})`;
+    mesa.querySelectorAll<HTMLElement>('.fundacion').forEach((hueco, i) => {
+      const cartaEl = hueco.querySelector<HTMLElement>('.carta');
+      if (!cartaEl) return;
+      hueco.style.setProperty('--halo', halo);
+      cartaEl.style.setProperty('--orden', String(i));
+      cartaEl.classList.add('volteo-triunfo');
+      // El sello es HERMANO de la carta (no gira con ella: si fuera hijo,
+      // a 90° quedaría de canto e invisible justo cuando debe verse).
+      const sello = crearHueco('sello-triunfo', undefined, actual.triunfo);
+      sello.setAttribute('aria-hidden', 'true');
+      sello.style.setProperty('--orden', String(i));
+      hueco.appendChild(sello);
+    });
+    mesa.querySelector('.hud-triunfo')?.classList.add('celebra');
   }
 
   // --- Selección y resaltes ---
@@ -243,8 +275,15 @@ export function mostrarMesa(
     seleccion = null;
     pintar();
     if (ganabaAhora) {
-      reproducir('victoria');
+      // Secuencia del triunfo: brisca mientras voltean las cartas…
+      reproducir('triunfo');
       vibrar([40, 60, 40]);
+      celebrarTriunfo();
+      if (prefiereMovimientoReducido()) {
+        reproducir('victoria'); // sin animación: la fanfarria es inmediata
+      } else {
+        timerVictoria = window.setTimeout(() => reproducir('victoria'), DURACION_CELEBRACION);
+      }
       acciones.onVictoria?.(actual);
     } else {
       // Rondéo al descubrir/voltear carta; golpe limpio al mover.
@@ -431,6 +470,10 @@ export function mostrarMesa(
   // --- Vida del componente ---
 
   function destruir(): void {
+    if (timerVictoria !== null) {
+      window.clearTimeout(timerVictoria);
+      timerVictoria = null;
+    }
     mesa.removeEventListener('click', alClic);
     mesa.removeEventListener('pointerdown', alPulsar);
     window.removeEventListener('pointermove', alMover);

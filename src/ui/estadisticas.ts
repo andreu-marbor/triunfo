@@ -28,6 +28,7 @@ function duracionLegible(ms: number | null): string {
 /** Racha descrita en palabras (patrón del quiz: «3 días seguidos»). */
 function rachaLegible(racha: number): string {
   if (racha <= 0) return t('stats.noStreak');
+  if (racha === 1) return t('stats.streakDay'); // singular (Fase 9: antes decía «1 días seguidos»)
   return t('stats.streakDays', { n: String(racha) });
 }
 
@@ -98,9 +99,12 @@ export function mostrarEstadisticas(
     </main>
   `;
 
-  raiz
-    .querySelector<HTMLButtonElement>('[data-volver]')!
-    .addEventListener('click', opciones.onVolver);
+  const botonVolver = raiz.querySelector<HTMLButtonElement>('[data-volver]')!;
+  botonVolver.addEventListener('click', opciones.onVolver);
 
-  return opciones.onVolver;
+  // Limpieza: SOLO desengancha el botón. Antes devolvíamos `onVolver` y, al
+  // ser guardada como «limpieza» en el router, pulsar Volver hacía
+  // irAMenu → limpiarActual() (= irAMenu) → … : recursión infinita que
+  // dejaba la app congelada en Estadísticas (detectado por comprobar-movil).
+  return () => botonVolver.removeEventListener('click', opciones.onVolver);
 }

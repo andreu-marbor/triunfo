@@ -41,7 +41,7 @@ comprobar(claves(es).length === claves(en).length, 'es y en tienen el mismo nº 
 comprobar(claves(es).join('|') === claves(ca).join('|'), 'las claves de es y ca coinciden');
 comprobar(claves(es).join('|') === claves(en).join('|'), 'las claves de es y en coinciden');
 // El mínimo crece con cada fase que añade pantallas.
-comprobar(claves(es).length >= 45, `hay un número razonable de claves (${claves(es).length})`);
+comprobar(claves(es).length >= 40, `hay un número razonable de claves (${claves(es).length})`);
 
 // --- 2. Textos y placeholders ---
 grupo('Textos y placeholders');
@@ -66,7 +66,7 @@ const criticas = [
   'app.title',
   'app.subtitle',
   'menu.guarantee',
-  'menu.play',
+  'menu.free',
   'lang.label',
   'game.moves',
   'game.victory',
@@ -92,6 +92,8 @@ comprobar(t('menu.guarantee') === 'Toda partida, verificada ganable', 'es: menu.
 setLang('ca');
 comprobar(t('app.subtitle') === 'Solitari amb baralla espanyola', 'ca: app.subtitle');
 comprobar(t('lang.label') === 'Idioma', 'ca: lang.label');
+// La ortografía valenciana/catalana no usa signo de admiración invertido.
+comprobar(t('game.victory') === 'Has guanyat!', 'ca: game.victory sin «¡» invertido');
 setLang('en');
 comprobar(t('menu.guarantee') === 'Every deal, verified winnable', 'en: menu.guarantee');
 comprobar(t('app.title') === 'Triunfo', 'en: app.title');

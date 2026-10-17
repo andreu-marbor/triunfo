@@ -184,6 +184,22 @@ comprobar(
   'el detalle indica el número de movimientos',
 );
 
+// Momento estrella (Fase 9): volteo de triunfo al ganar.
+const volteos = raiz.querySelectorAll('.fundacion .carta.volteo-triunfo');
+comprobar(volteos.length === 4, 'al ganar, las 4 cartas de fundación entran en el volteo del triunfo');
+comprobar(
+  raiz.querySelectorAll('.fundacion .sello-triunfo').length === 4,
+  'con el sello del palo de triunfo superpuesto a cada volteo',
+);
+comprobar(
+  Array.from(volteos).every((el) => /^\d$/.test(el.style.getPropertyValue('--orden'))),
+  'cada volteo lleva su escalonado (--orden)',
+);
+comprobar(
+  raiz.querySelector('.hud-triunfo.celebra') !== null,
+  'el HUD celebra el triunfo',
+);
+
 // --- 6. Controles de la capa de victoria y destrucción ---
 grupo('Controles');
 clic(raiz.querySelector('.victoria [data-menu]'));
@@ -255,6 +271,38 @@ comprobar(
 clic(raiz.querySelector('[data-volver]'));
 comprobar(estados[estados.length - 1] === 'volver', 'el botón de volver regresa al menú');
 stats();
+
+// Regresión (Fase 9): el router guarda la limpieza devuelta y la ejecuta al
+// navegar. Antes, Estadísticas devolvía `onVolver` como limpieza y el flujo
+// real era irAMenu → limpiarActual() (= irAMenu) → … : recursión infinita que
+// congelaba la app en Estadísticas (detectado por scripts/comprobar-movil.mjs).
+let limpiarRouter: (() => void) | null = null;
+let enMenuTrasVolver = false;
+const irAlMenuFake = (): void => {
+  limpiarRouter?.(); // ← antes esto se invocaba a sí mismo sin fin
+  raiz.innerHTML = '<main class="inicio"><p>menú</p></main>';
+  enMenuTrasVolver = raiz.querySelector('main.inicio:not(.estadisticas)') !== null;
+};
+limpiarRouter = mostrarEstadisticas(raiz, {
+  estadisticas: estadisticasVacias(),
+  onVolver: irAlMenuFake,
+});
+clic(raiz.querySelector('[data-volver]'));
+comprobar(
+  enMenuTrasVolver,
+  'volver desde estadísticas navega al menú sin recursión infinita',
+);
+
+// Regresión (Fase 9, revisión i18n): con racha de 1 el valor usa el singular.
+const statsRacha = mostrarEstadisticas(raiz, {
+  estadisticas: { ...estadisticasVacias(), racha: 1 },
+  onVolver: () => {},
+});
+comprobar(
+  (raiz.textContent ?? '').includes('1 día seguido'),
+  'la racha de 1 dice «1 día seguido» (singular)',
+);
+statsRacha();
 
 // --- 8. Fase 6: botón de sonido en menú y HUD ---
 grupo('Botón de sonido (menú y HUD)');

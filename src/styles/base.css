@@ -9,18 +9,22 @@
   --tapete-oscuro: #0d4a2b;
 
   /* Palos (color cerámico de cada uno) */
-  --oros: #c8912f;
+  --oros: #b07d1f; /* bronceado oro: ≥3:1 sobre --papel (las pipas son
+                      gráficos de contenido, WCAG 1.4.11 — el dorado claro
+                      original #c8912f daba 2,49:1) */
   --copas: #b7362c;
   --espadas: #2f5fa8;
   --bastos: #2e7d46;
 
   /* Carta y tinta */
   --papel: #f7f2e4;
+  --papel-hover: #fffaf0;
   --papel-borde: #d9d0bb;
   --tinta: #241d14;
+  --tinta-tenue: #6b6152;
   --texto: #f4f0e4;
-  --texto-tenue: #cfe0d4;
-  --acento: #e6bb5c; /* dorado del triunfo */
+  --texto-tenue: #e6f1e8; /* ≥4.5:1 sobre el tapete en su punto más claro */
+  --acento: #eac665; /* dorado del triunfo: ≥3:1 sobre --tapete-claro (foco) */
 
   --radio: 10px;
   --sombra: 0 6px 18px rgb(0 0 0 / 0.28);
@@ -41,6 +45,10 @@ body {
   background:
     radial-gradient(circle at 50% 35%, var(--tapete-claro) 0%, var(--tapete) 45%, var(--tapete-oscuro) 100%),
     var(--tapete);
+  /* Sin user-scalable=no (WCAG 1.4.4): se permite el zoom de pellizco y,
+     en cambio, se desactiva el zoom por doble toque que fastidiaría los
+     toques sobre las cartas. */
+  touch-action: manipulation;
   color: var(--texto);
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
