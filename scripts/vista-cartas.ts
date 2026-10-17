@@ -36,7 +36,10 @@ aplicarIdiomaInicial(); // 'es' por defecto: solo afecta a etiquetas aria
 const baraja = barajaEspanola();
 const dorso: Carta = { ...baraja[0], bocaAbajo: true };
 
-/** Filas de piezas (carta + rótulo) con el SVG real de la app. */
+/** Filas de piezas (carta + rótulo) con el SVG real de la app.
+    Clave: sobreescribir `--carta-ancho`/`--carta-alto` en el contenedor,
+    porque `.carta` mide sus dimensiones por esas variables (si no, todas
+    las cartas se quedan en `min(12vw, 74px)` y no se ve la escala real). */
 function piezas(px: number, cartas: Carta[]): string {
   const alto = Math.round(px * 1.42);
   return cartas
@@ -44,7 +47,7 @@ function piezas(px: number, cartas: Carta[]): string {
       const titulo = c.bocaAbajo ? 'dorso' : `${c.rango} · ${c.palo}`;
       return `
       <figure class="pieza">
-        <div class="lienzo" style="width:${px}px;height:${alto}px">${crearCarta(c).outerHTML}</div>
+        <div class="lienzo" style="--carta-ancho:${px}px;--carta-alto:${alto}px;--carta-radio:${Math.max(2, Math.round(px * 0.11))}px;width:${px}px;height:${alto}px">${crearCarta(c).outerHTML}</div>
         <figcaption>${titulo}</figcaption>
       </figure>`;
     })

@@ -504,3 +504,30 @@ aserción «nacen boca arriba» comprobaba una propiedad inexistente y pasaba si
 **Estado:** suite **378 comprobaciones** (16 contraste + 87 i18n + 30 cartas + 72 motor +
 32 solver + 15 reparto + 28 diaria + 40 estadísticas + 58 pantallas) y build en verde.
 **Siguiente:** feedback del usuario con la hoja de contactos → Paso 2 (figuras ilustradas).
+
+---
+
+## 2026-10-17 — Fase 9.5 (corrección tras feedback): la hoja no escalaba y el panel no encajaba
+
+**Qué:** al enseñar la hoja de contactos, el usuario detectó dos defectos: (1) **todas las
+cartas se veían igual de grandes** (300/74/38 px parecían idénticas) y (2) «algo no está bien
+en el panel de figuras».
+
+**Causas y arreglo:**
+
+1. **Escalado de la hoja:** `.carta` mide `var(--carta-ancho)`, `var(--carta-alto)` y
+   `var(--carta-radio)`, declaradas en `:root` — `var()` se resuelve donde se declara, así que
+   el contenedor `.lienzo` con `width` en línea no cambiaba nada: las tres filas salían a
+   `min(12vw, 74px)`. `scripts/vista-cartas.ts` ahora **sobreescribe las tres variables** en
+   `.lienzo` (el `--carta-radio` además, si no, a 300 px quedaba raquítico y a 38 px
+   desproporcionado). Ahora 300/74/38 son tamaños reales (5/40/40 cartas en el HTML).
+2. **Desborde del panel de figuras:** el panel medía 30×74 pero el glifo a escala 2,3 pinta
+   ~44–45 unidades de ancho (la moneda de oros) → **la figura se salía del panel por los
+   lados**. El panel pasa a ocupar **el campo interior completo** (5,5 · 65 · 97, como en las
+   barajas clásicas: el índice de esquina queda encima, sobre un fondo aún más claro que el
+   papel) y el glifo sube a **escala 2,5 centrado en (38, 49)** con holgura. El contraste sigue
+   mejorando (par «oros sobre papel (hover)» ≥3 verificado).
+
+**Verificación:** hoja regenerada (`npm.cmd run vista:cartas`, abre sola en el navegador),
+suite **378 ✓** y build ✓; en el HTML generado: 26 paneles + 26 glifos a `scale(2.5)` y los
+tres tamaños (5 + 40 + 40 cartas).

@@ -75,14 +75,15 @@ function pipas(carta: Carta): string {
 }
 
 /** Figuras (sota, caballo, rey): glifo grande + puntos (1, 2 o 3).
-    Fase 9.5: el glifo crece y respira dentro del panel del campo. */
+    Fase 9.5: el glifo llena el campo (panel interior completo, como en
+    las barajas clásicas — el índice de esquina queda encima). */
 function figura(carta: Carta): string {
   const puntos = carta.rango - 9; // 10→1, 11→2, 12→3
   let puntosSvg = '';
   for (let i = 0; i < puntos; i++) {
     puntosSvg += `<circle cx="${38 - (puntos - 1) * 5 + i * 10}" cy="88" r="2.1" class="carta-glifo"/>`;
   }
-  return `${glifoEn(carta.palo, 38, 50, 2.3)}${puntosSvg}`;
+  return `${glifoEn(carta.palo, 38, 49, 2.5)}${puntosSvg}`;
 }
 
 /** Cara completa de la carta (SVG, viewBox 76×108). */
@@ -91,11 +92,11 @@ function caraSvg(carta: Carta): string {
   const esquina = `
     <text x="7" y="16" class="carta-numero">${carta.rango}</text>
     ${glifoEn(carta.palo, 11.5, 25.5, 0.5)}`;
-  // Panel del campo de figuras (Fase 9.5): más claro que el papel, las
-  // figuras ganan escenario y su contraste MEJORA (ver el par «pipas
-  // sobre el panel» en comprobar-contraste).
+  // Campo de figuras (Fase 9.5): el interior entero en `--papel-hover`,
+  // más claro que el papel — las figuras ganan escenario y su contraste
+  // MEJORA (ver el par «figuras sobre el panel» en comprobar-contraste).
   const panel = esFigura
-    ? '<rect x="23" y="19" width="30" height="74" rx="4" class="carta-panel"/>'
+    ? '<rect x="5.5" y="5.5" width="65" height="97" rx="4.5" class="carta-panel"/>'
     : '';
   return `
     <svg class="carta-cara" viewBox="0 0 76 108" aria-hidden="true" focusable="false">
